@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 #Based on http://www.opengl-tutorial.org/beginners-tutorials/tutorial-4-a-colored-cube/
+#and http://cyrille.rossant.net/shaders-opengl/
 
 import numpy as np
 import OpenGL.GL as gl
@@ -135,8 +136,8 @@ MVP = None
 
 def display(program):
 
-	vertexbuffer = glvbo.VBO(np.array(g_vertex_buffer_data))
-	colorbuffer = glvbo.VBO(np.array(g_color_buffer_data))
+	vertexbuffer = glvbo.VBO(np.array(g_vertex_buffer_data, dtype=np.float32))
+	colorbuffer = glvbo.VBO(np.array(g_color_buffer_data, dtype=np.float32))
 
 	# Clear the screen
 	gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
@@ -146,22 +147,38 @@ def display(program):
 
 	# Send our transformation to the currently bound shader, 
 	# in the "MVP" uniform
-	print MVP
-	gl.glUniformMatrix4fv(MvpID, 1, gl.GL_FALSE, list(MVP))
+	gl.glUniformMatrix4fv(MvpID, 1, gl.GL_FALSE, np.array(list(MVP), dtype=np.float32))
 
 	# 1rst attribute buffer : vertices
-	gl.glEnableVertexAttribArray(0);
+	gl.glEnableVertexAttribArray(0)
 	vertexbuffer.bind()
 
+	gl.glVertexAttribPointer(
+			0,                  # attribute. No particular reason for 0, but must match the layout in the shader.
+			3,                  # size
+			gl.GL_FLOAT,          # type
+			gl.GL_FALSE,          # normalized?
+			0,                  # stride
+			0            	# array buffer offset
+		)
+
 	# 2nd attribute buffer : colors
-	gl.glEnableVertexAttribArray(1);
+	gl.glEnableVertexAttribArray(1)
 	colorbuffer.bind()
+	gl.glVertexAttribPointer(
+			1,                                # attribute. No particular reason for 1, but must match the layout in the shader.
+			3,                                # size
+			gl.GL_FLOAT,                         # type
+			gl.GL_FALSE,                         # normalized?
+			0,                                # stride
+			0                         # array buffer offset
+		)
 
 	# Draw the triangle !
-	gl.glDrawArrays(gl.GL_TRIANGLES, 0, 12*3); # 12*3 indices starting at 0 -> 12 triangles
+	gl.glDrawArrays(gl.GL_TRIANGLES, 0, 12*3) # 12*3 indices starting at 0 -> 12 triangles
 
-	gl.glDisableVertexAttribArray(0);
-	gl.glDisableVertexAttribArray(1);
+	gl.glDisableVertexAttribArray(0)
+	gl.glDisableVertexAttribArray(1)
 
 def compile_vertex_shader(source):
 	"""Compile a vertex shader from source."""
@@ -214,6 +231,7 @@ def init_shader_program():
 
 	global MvpID
 	MvpID = gl.glGetUniformLocation(program, "MVP")
+	print MvpID
 
 	#Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	Projection = glm.mat4x4.perspective(45.0, 4.0 / 3.0, 0.1, 100.0)
