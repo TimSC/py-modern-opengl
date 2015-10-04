@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-import example, sys
+import common2d, sys
 import OpenGL.GLUT as glut
 import OpenGL.GL as gl
 
@@ -8,7 +8,7 @@ _myProg = None
 
 def displayFunc():
 	global _myProg
-	example.display(_myProg)
+	common2d.display(_myProg)
 	glut.glutSwapBuffers()
 
 def set_global_program(program):
@@ -33,7 +33,7 @@ if __name__=="__main__":
 	glut.glutDisplayFunc(displayFunc)
 	glut.glutKeyboardFunc(keyboard)
 
-	program = example.init_shader_program()
+	program = common2d.init_shader_program()
 	set_global_program(program)
 
 	# Make program the default program

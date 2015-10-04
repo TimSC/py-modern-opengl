@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import pyglfw.pyglfw as glfw
-import example
+import common2d
 
 if __name__ == '__main__':
 	glfw.init()
@@ -10,11 +10,11 @@ if __name__ == '__main__':
 
 	w.make_current()
 
-	program = example.init_shader_program()
+	program = common2d.init_shader_program()
 
 	while not w.should_close:
 		# Render here
-		example.display(program)
+		common2d.display(program)
 
 		w.swap_buffers()
 		glfw.poll_events()

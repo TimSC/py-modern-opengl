@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-import glfw, example
+import glfw, common2d
 import OpenGL.GL as gl
 
 def error_callback():
@@ -22,12 +22,12 @@ def main():
 	# Make the window's context current
 	glfw.make_context_current(window)
 
-	program = example.init_shader_program()
+	program = common2d.init_shader_program()
 
 	# Loop until the user closes the window
 	while not glfw.window_should_close(window):
 		# Render here
-		example.display(program)
+		common2d.display(program)
 
 		# Swap front and back buffers
 		glfw.swap_buffers(window)
