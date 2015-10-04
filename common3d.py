@@ -4,8 +4,6 @@ import OpenGL
 from OpenGL.GL import *
 from OpenGL.GL.shaders import *
 from OpenGL.GLU import *
-from OpenGL.GLUT import *
-from OpenGL.GLUT.freeglut import *
 from OpenGL.arrays import vbo
 import numpy, math, sys
 
@@ -78,8 +76,28 @@ def init():
 	vertexData = numpy.array(quadV, numpy.float32)
 	glBufferData(GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, GL_STATIC_DRAW)
 
-# render
-def render(pMatrix, mvMatrix):
+def set_aspect(aspectIn):
+	global aspect
+	aspect = aspectIn
+
+def draw():
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+	# build projection matrix
+	fov = math.radians(45.0)
+	f = 1.0 / math.tan(fov / 2.0)
+	zN, zF = (0.1, 100.0)
+	a = aspect
+	pMatrix = numpy.array([f / a, 0.0, 0.0, 0.0,
+						   0.0, f, 0.0, 0.0,
+						   0.0, 0.0, (zF + zN) / (zN - zF), -1.0,
+						   0.0, 0.0, 2.0 * zF * zN / (zN - zF), 0.0], numpy.float32)
+
+	# modelview matrix
+	mvMatrix = numpy.array([1.0, 0.0, 0.0, 0.0,
+							0.0, 1.0, 0.0, 0.0,
+							0.0, 0.0, 1.0, 0.0,
+							0.5, 0.0, -5.0, 1.0], numpy.float32)
+
 	# use shader
 	glUseProgram(program)
 
@@ -104,32 +122,5 @@ def render(pMatrix, mvMatrix):
 
 	# disable arrays
 	glDisableVertexAttribArray(vertIndex)
-
-def set_aspect(aspectIn):
-	global aspect
-	aspect = aspectIn
-
-def draw():
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-	# build projection matrix
-	fov = math.radians(45.0)
-	f = 1.0 / math.tan(fov / 2.0)
-	zN, zF = (0.1, 100.0)
-	a = aspect
-	pMatrix = numpy.array([f / a, 0.0, 0.0, 0.0,
-						   0.0, f, 0.0, 0.0,
-						   0.0, 0.0, (zF + zN) / (zN - zF), -1.0,
-						   0.0, 0.0, 2.0 * zF * zN / (zN - zF), 0.0], numpy.float32)
-
-	# modelview matrix
-	mvMatrix = numpy.array([1.0, 0.0, 0.0, 0.0,
-							0.0, 1.0, 0.0, 0.0,
-							0.0, 0.0, 1.0, 0.0,
-							0.5, 0.0, -5.0, 1.0], numpy.float32)
-
-	# render
-	render(pMatrix, mvMatrix)
-	# swap buffers
-	glutSwapBuffers()
 
 

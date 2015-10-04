@@ -5,12 +5,16 @@ from OpenGL.GLUT.freeglut import *
 import common3d
 import OpenGL.GL as gl
 
+def draw():
+	common3d.draw()
+	glutSwapBuffers()
+
 def main():
 	glutInitDisplayMode(GLUT_RGBA)
 	glutInitWindowSize(640, 480)
 	window = glutCreateWindow("Minimal")
 	glutReshapeFunc(reshape)
-	glutDisplayFunc(common3d.draw)
+	glutDisplayFunc(draw)
 	glutKeyboardFunc(keyPressed)  # Checks for key strokes
 	common3d.init()
 	glutMainLoop()
@@ -21,8 +25,8 @@ def reshape(widthIn, heightIn):
 	height = heightIn
 	common3d.set_aspect(width / float(height))
 	gl.glViewport(0, 0, width, height)
-	gl.glEnable(GL_DEPTH_TEST)
-	gl.glDisable(GL_CULL_FACE)
+	gl.glEnable(gl.GL_DEPTH_TEST)
+	gl.glDisable(gl.GL_CULL_FACE)
 	gl.glClearColor(0.8, 0.8, 0.8, 1.0)
 	glutPostRedisplay()
 
