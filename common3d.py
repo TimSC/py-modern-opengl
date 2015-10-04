@@ -30,18 +30,9 @@ void main() {
 }
 """
 
-program = None
-vertexBuffer = None
-pMatrixUniform = None
-mvMatrixUniform = None
-colorU = None
-vertIndex = None
-col0 = None
-aspect = 1.
-
 # initialization
 def init():
-	global program, pMatrixUniform, mvMatrixUniform, colorU, vertIndex, col0
+	out = {}
 	# create shader
 	vs = compileShader(strVS, GL_VERTEX_SHADER)
 	fs = compileShader(strFS, GL_FRAGMENT_SHADER)
@@ -70,17 +61,30 @@ def init():
 			 ]
 
 	# vertices
-	global vertexBuffer
 	vertexBuffer = glGenBuffers(1)
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
 	vertexData = numpy.array(quadV, numpy.float32)
 	glBufferData(GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, GL_STATIC_DRAW)
 
-def set_aspect(aspectIn):
-	global aspect
-	aspect = aspectIn
+	out = {'program': program, 
+		'pMatrixUniform': pMatrixUniform, 
+		'mvMatrixUniform': mvMatrixUniform, 
+		'colorU': colorU, 
+		'vertIndex': vertIndex, 
+		'col0': col0, 
+		'vertexBuffer': vertexBuffer}
+	return out
 
-def draw():
+def draw(params, aspect):
+	
+	program = params['program']
+	pMatrixUniform = params['pMatrixUniform']
+	mvMatrixUniform = params['mvMatrixUniform']
+	colorU = params['colorU']
+	vertIndex = params['vertIndex']
+	col0 = params['col0']
+	vertexBuffer = params['vertexBuffer']
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	# build projection matrix
 	fov = math.radians(45.0)

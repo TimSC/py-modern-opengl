@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import glfw, example
 import OpenGL.GL as gl
-import numpy as np
 
 def error_callback():
 	print "error_callback"

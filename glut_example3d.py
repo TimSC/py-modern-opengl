@@ -5,25 +5,31 @@ from OpenGL.GLUT.freeglut import *
 import common3d
 import OpenGL.GL as gl
 
+aspect = 1.
+params = None
+width, height = None, None
+
 def draw():
-	common3d.draw()
+	common3d.draw(params, aspect)
 	glutSwapBuffers()
 
 def main():
 	glutInitDisplayMode(GLUT_RGBA)
 	glutInitWindowSize(640, 480)
-	window = glutCreateWindow("Minimal")
+	window = glutCreateWindow("Hello world!")
 	glutReshapeFunc(reshape)
 	glutDisplayFunc(draw)
 	glutKeyboardFunc(keyPressed)  # Checks for key strokes
-	common3d.init()
+	global params
+	params = common3d.init()
 	glutMainLoop()
 
 def reshape(widthIn, heightIn):
 	global width, height
 	width = widthIn
 	height = heightIn
-	common3d.set_aspect(width / float(height))
+	global aspect
+	aspect = (width / float(height))
 	gl.glViewport(0, 0, width, height)
 	gl.glEnable(gl.GL_DEPTH_TEST)
 	gl.glDisable(gl.GL_CULL_FACE)
