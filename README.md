@@ -6,14 +6,13 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 * glfw_example2d.py - 2D example using [glfw](https://pypi.python.org/pypi/glfw)
 * glut_example2d.py - 2D example using glut
 * pyglfw_example2d.py - 2D example using [pyglfw](https://pypi.python.org/pypi/pyglfw)
-
 * glfw_example3d.py - 3D example using [glfw](https://pypi.python.org/pypi/glfw)
 * glut_example3d.py - 3D example using glut
 
 Copying
 =======
 
-Copyright (c) 2012, Tim Sheerman-Chase, Cyrille Rossant, Patrick Skjennum
+Copyright (c) 2012-2015, Tim Sheerman-Chase, Cyrille Rossant, Patrick Skjennum
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
