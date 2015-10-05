@@ -92,6 +92,12 @@ def link_shader_program(vertex_shader, fragment_shader):
 	return program
 
 def init_shader_program():
+	versionString = gl.glGetString(gl.GL_VERSION).split(" ")
+	openglVersionString = versionString[0]
+	openglVersionNums = map(int, openglVersionString.split("."))
+	if openglVersionNums[0] < 3 or (openglVersionNums[0] == 3 and openglVersionNums[1] < 3):
+		exit("Requires opengl 3.3 or better, you have {0}".format(openglVersionString))
+
 	# background color
 	gl.glClearColor(0, 0, 0, 0)
 	# create a Vertex Buffer Object with the specified data

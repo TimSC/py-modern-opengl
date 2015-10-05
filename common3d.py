@@ -2,6 +2,7 @@
 
 import OpenGL
 from OpenGL.GL import *
+import OpenGL.GL as gl
 from OpenGL.GL.shaders import *
 from OpenGL.GLU import *
 from OpenGL.arrays import vbo
@@ -32,6 +33,12 @@ void main() {
 
 # initialization
 def init():
+	versionString = gl.glGetString(gl.GL_VERSION).split(" ")
+	openglVersionString = versionString[0]
+	openglVersionNums = map(int, openglVersionString.split("."))
+	if openglVersionNums[0] < 3 or (openglVersionNums[0] == 3 and openglVersionNums[1] < 3):
+		exit("Requires opengl 3.3 or better, you have {0}".format(openglVersionString))
+
 	out = {}
 	# create shader
 	vs = compileShader(strVS, GL_VERTEX_SHADER)
