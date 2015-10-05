@@ -13,10 +13,6 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 Copying
 =======
 
-In the original BSD license, both occurrences of the phrase "COPYRIGHT HOLDERS AND CONTRIBUTORS" in the disclaimer read "REGENTS AND CONTRIBUTORS".
-
-Here is the license template:
-
 Copyright (c) 2012, Tim Sheerman-Chase, Cyrille Rossant, Patrick Skjennum
 All rights reserved.
 
