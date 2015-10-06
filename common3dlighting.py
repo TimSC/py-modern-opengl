@@ -59,7 +59,7 @@ def init():
 	col0 = [1.0, 1.0, 0.0, 1.0]
 
 	# define quad vertices
-	s = 0.5
+	s = 0.2
 	quadV = [
 			#Front
 			- s, s, -s,
@@ -75,6 +75,34 @@ def init():
 			 s, s, s,
 			 - s, -s, s,
 			 s, -s, s,
+			#Left
+			 s, - s, s,
+			 s, - s, -s,
+			 s, s, s,
+			 s, s, s,
+			 s, - s, -s,
+			 s, s, -s,
+			#Right
+			 -s, - s, s, 
+			 -s, - s, -s, 
+			 -s, s, s, 
+			 -s, s, s, 
+			 -s, - s, -s, 
+			 -s, s, -s, 
+			#Top
+			- s, -s, s,
+			 - s, -s, -s,
+			 s, -s, s,
+			 s, -s, s,
+			 - s, -s, -s,
+			 s, -s, -s,
+			#Bottom
+			- s, s, s,
+			 - s, s, -s,
+			 s, s, s,
+			 s, s, s,
+			 - s, s, -s,
+			 s, s, -s,
 			 ]
 
 	# vertices
@@ -98,6 +126,30 @@ def init():
 			 0.0, 1.0, 0.0, 1.0,
 			 0.0, 1.0, 0.0, 1.0,
 			 0.0, 1.0, 0.0, 1.0,
+			 0.0, 0.0, 1.0, 1.0,
+			 0.0, 0.0, 1.0, 1.0,
+			 0.0, 0.0, 1.0, 1.0,
+			 0.0, 0.0, 1.0, 1.0,
+			 0.0, 0.0, 1.0, 1.0,
+			 0.0, 0.0, 1.0, 1.0,
+			 0.0, 1.0, 1.0, 1.0,
+			 0.0, 1.0, 1.0, 1.0,
+			 0.0, 1.0, 1.0, 1.0,
+			 0.0, 1.0, 1.0, 1.0,
+			 0.0, 1.0, 1.0, 1.0,
+			 0.0, 1.0, 1.0, 1.0,
+			 1.0, 0.0, 1.0, 1.0,
+			 1.0, 0.0, 1.0, 1.0,
+			 1.0, 0.0, 1.0, 1.0,
+			 1.0, 0.0, 1.0, 1.0,
+			 1.0, 0.0, 1.0, 1.0,
+			 1.0, 0.0, 1.0, 1.0,
+			 1.0, 1.0, 0.0, 1.0,
+			 1.0, 1.0, 0.0, 1.0,
+			 1.0, 1.0, 0.0, 1.0,
+			 1.0, 1.0, 0.0, 1.0,
+			 1.0, 1.0, 0.0, 1.0,
+			 1.0, 1.0, 0.0, 1.0,
 			 ]
 
 	colBuffer = glGenBuffers(1)
@@ -126,6 +178,8 @@ def draw(params, aspect):
 	colBuffer = params['colBuffer']
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+	glEnable(GL_DEPTH_TEST)
+
 	# build projection matrix
 	fov = math.radians(45.0)
 	f = 1.0 / math.tan(fov / 2.0)
@@ -140,9 +194,9 @@ def draw(params, aspect):
 	identityMvMatrix = np.array([[1.0, 0.0, 0.0, 0.0],
 							[0.0, 1.0, 0.0, 0.0],
 							[0.0, 0.0, 1.0, 0.0],
-							[0.5, 0.0, -5.0, 1.0]])
-	mvRotate = glutils.rotation_matrix((1., 0., 0.), time.time())
-	mvMatrix = np.dot(mvRotate, identityMvMatrix)
+							[0.0, 0.0, -5.0, 1.0]])
+	mvRotate1 = glutils.rotation_matrix((1., 0., 0.), time.time())
+	mvMatrix = np.dot(mvRotate1, identityMvMatrix)
 	mvMatrix = np.array(mvMatrix.reshape((16,)), np.float32)
 
 	# use shader
@@ -165,7 +219,7 @@ def draw(params, aspect):
 	glVertexAttribPointer(colorIndex, 4, GL_FLOAT, GL_FALSE, 0, None)
 
 	# draw
-	glDrawArrays(GL_TRIANGLES, 0, 6)
+	glDrawArrays(GL_TRIANGLES, 0, 36)
 
 	# disable arrays
 	glDisableVertexAttribArray(vertIndex)

@@ -15,7 +15,7 @@ def draw():
 	glutSwapBuffers()
 
 def main():
-	glutInitDisplayMode(GLUT_RGBA)
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 	glutInitWindowSize(640, 480)
 	window = glutCreateWindow("Hello world!")
 	glutReshapeFunc(reshape)
