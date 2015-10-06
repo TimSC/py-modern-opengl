@@ -7,23 +7,27 @@ from OpenGL.GL.shaders import *
 from OpenGL.GLU import *
 from OpenGL.arrays import vbo
 import numpy, math, sys
+from PIL import Image
 
 strVS = """
+#version 330 core
 attribute vec3 aVert;
+attribute vec2 aUV;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
-uniform vec4 uColor;
-varying vec4 vCol;
+out vec2 UV;
 void main() {
-  gl_Position = uPMatrix * uMVMatrix * vec4(aVert, 1.0); 
-  vCol = vec4(uColor.rgb, 1.0);
+  gl_Position = uPMatrix * uMVMatrix * vec4(aVert, 1.0);
+  UV = aUV;
 }
 """
 strFS = """
-varying vec4 vCol;
+#version 330 core
+in vec2 UV;
+uniform sampler2D uTexture;
+out vec3 color;
 void main() {
-  // use vertex color
-  gl_FragColor = vCol;
+  color = texture(uTexture, UV).rgb;;
 }
 """
 
@@ -44,38 +48,62 @@ def init():
 
 	pMatrixUniform = glGetUniformLocation(program, 'uPMatrix')
 	mvMatrixUniform = glGetUniformLocation(program, "uMVMatrix")
-	colorU = glGetUniformLocation(program, "uColor")
+	textureUniform = glGetUniformLocation(program, "uTexture")
 
-	# attributes
+	# define vertices
 	vertIndex = glGetAttribLocation(program, "aVert")
-
-	# color
-	col0 = [1.0, 1.0, 1.0, 1.0]
-
-	# define quad vertices
 	s = 0.9
 	quadV = [
-			- s, s, 0.0,
-			 - s, -s, 0.0,
-			 s, s, 0.0,
-			 s, s, 0.0,
-			 - s, -s, 0.0,
-			 s, -s, 0.0
+			 - s, s, 0.0, 
+			 - s, -s, 0.0, 			
+			 s, s, 0.0, 
+			 s, s, 0.0, 
+			 - s, -s, 0.0, 
+			 s, -s, 0.0, 
 			 ]
 
-	# vertices
 	vertexBuffer = glGenBuffers(1)
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
 	vertexData = numpy.array(quadV, numpy.float32)
 	glBufferData(GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, GL_STATIC_DRAW)
 
+	# define UV
+	uvIndex = glGetAttribLocation(program, "aUV")
+	quadUV = [
+			 0., 0.,
+			 0., 1.,
+			 1., 0.,
+			 1., 0.,
+			 0., 1.,
+			 1., 1.
+			 ]
+
+	uvBuffer = glGenBuffers(1)
+	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer)
+	uvData = numpy.array(quadUV, numpy.float32)
+	glBufferData(GL_ARRAY_BUFFER, 4 * len(uvData), uvData, GL_STATIC_DRAW)
+
+	#Create texture
+	texIndex = glGenTextures(1)
+	glBindTexture(GL_TEXTURE_2D, texIndex)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+	img = Image.open("butterfly.JPG") # .jpg, .bmp, etc. also work
+	img_data = numpy.array(list(img.getdata()), numpy.int8)
+ 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
+	glBindTexture(GL_TEXTURE_2D, 0)
+
 	out = {'program': program, 
 		'pMatrixUniform': pMatrixUniform, 
 		'mvMatrixUniform': mvMatrixUniform, 
-		'colorU': colorU, 
+		'textureUniform': textureUniform,
 		'vertIndex': vertIndex, 
-		'col0': col0, 
-		'vertexBuffer': vertexBuffer}
+		'uvIndex': uvIndex, 
+		'vertexBuffer': vertexBuffer,
+		'uvBuffer': uvBuffer,
+		'texIndex': texIndex}
 	return out
 
 def draw(params, aspect):
@@ -83,10 +111,12 @@ def draw(params, aspect):
 	program = params['program']
 	pMatrixUniform = params['pMatrixUniform']
 	mvMatrixUniform = params['mvMatrixUniform']
-	colorU = params['colorU']
+	textureUniform = params['textureUniform']
 	vertIndex = params['vertIndex']
-	col0 = params['col0']
+	uvIndex = params['uvIndex']
 	vertexBuffer = params['vertexBuffer']
+	uvBuffer = params['uvBuffer']
+	texIndex = params['texIndex']
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	# build projection matrix
@@ -114,21 +144,24 @@ def draw(params, aspect):
 	# set modelview matrix
 	glUniformMatrix4fv(mvMatrixUniform, 1, GL_FALSE, mvMatrix)
 
-	# set color
-	glUniform4fv(colorU, 1, col0)
-
 	#enable arrays
 	glEnableVertexAttribArray(vertIndex)
+	glEnableVertexAttribArray(uvIndex)
+
+	#enable texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texIndex)
 
 	# set buffers
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
 	glVertexAttribPointer(vertIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
+	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer)
+	glVertexAttribPointer(uvIndex, 2, GL_FLOAT, GL_FALSE, 0, None)
 
 	# draw
 	glDrawArrays(GL_TRIANGLES, 0, 6)
 
 	# disable arrays
 	glDisableVertexAttribArray(vertIndex)
-
-
+	glDisableVertexAttribArray(uvIndex)
 
