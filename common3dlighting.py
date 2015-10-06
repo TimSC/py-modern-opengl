@@ -7,7 +7,7 @@ from OpenGL.GL.shaders import *
 from OpenGL.GLU import *
 from OpenGL.arrays import vbo
 import numpy as np
-import math, sys, time, glutils
+import math, sys, time, OpenGLContext.utilities as utils
 
 strVS = """
 #version 330 core
@@ -59,7 +59,7 @@ def init():
 	col0 = [1.0, 1.0, 0.0, 1.0]
 
 	# define quad vertices
-	s = 0.2
+	s = 0.9
 	quadV = [
 			#Front
 			- s, s, -s,
@@ -195,9 +195,13 @@ def draw(params, aspect):
 							[0.0, 1.0, 0.0, 0.0],
 							[0.0, 0.0, 1.0, 0.0],
 							[0.0, 0.0, 0.0, 1.0]])
-	mvRotate1 = glutils.rotation_matrix((1., 0., 0.), time.time())
-	mvMatrix = np.dot(mvRotate1, identityMvMatrix)
-	mvRotate2 = glutils.rotation_matrix((0., 1., 0.), time.time()/ 5.)
+	test = time.clock()
+	numPi = int(test / math.pi)
+
+	mvMatrix = identityMvMatrix
+	mvRotate1 = utils.rotMatrix([1., 0., 0., time.clock()])
+	mvMatrix = np.dot(mvRotate1, mvMatrix)
+	mvRotate2 = utils.rotMatrix([0., 1., 0., time.clock()/5.])
 	mvMatrix = np.dot(mvRotate2, mvMatrix)
 	mvMatrix[3,2] = -5. #Translate
 	mvMatrix = np.array(mvMatrix.reshape((16,)), np.float32)
