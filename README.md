@@ -8,6 +8,7 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 * pyglfw_example2d.py - 2D example using [pyglfw](https://pypi.python.org/pypi/pyglfw)
 * glfw_example3d.py - 3D example using [glfw](https://pypi.python.org/pypi/glfw)
 * glut_example3d.py - 3D example using glut
+* glut_example3dtex.py - Texture example using glut
 
 Copying
 =======
