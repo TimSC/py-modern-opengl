@@ -7,7 +7,8 @@ from OpenGL.GL.shaders import *
 from OpenGL.GLU import *
 from OpenGL.arrays import vbo
 import numpy as np
-import math, sys, time, OpenGLContext.utilities as utils
+import math, sys, time
+import vrml.vrml97.transformmatrix as tr
 
 strVS = """
 #version 330 core
@@ -199,9 +200,9 @@ def draw(params, aspect):
 	numPi = int(test / math.pi)
 
 	mvMatrix = identityMvMatrix
-	mvRotate1 = utils.rotMatrix([1., 0., 0., time.clock()])
+	mvRotate1 = tr.rotMatrix([1., 0., 0., time.clock()])[0]
 	mvMatrix = np.dot(mvRotate1, mvMatrix)
-	mvRotate2 = utils.rotMatrix([0., 1., 0., time.clock()/5.])
+	mvRotate2 = tr.rotMatrix([0., 1., 0., time.clock()/5.])[0]
 	mvMatrix = np.dot(mvRotate2, mvMatrix)
 	mvMatrix[3,2] = -5. #Translate
 	mvMatrix = np.array(mvMatrix.reshape((16,)), np.float32)
