@@ -2,8 +2,9 @@
 
 from OpenGL.GLUT import *
 from OpenGL.GLUT.freeglut import *
-import common3dlighting
+import common3dlighting, time
 import OpenGL.GL as gl
+lastDrawTime = 0.
 
 aspect = 1.
 params = None
@@ -19,6 +20,7 @@ def main():
 	window = glutCreateWindow("Hello world!")
 	glutReshapeFunc(reshape)
 	glutDisplayFunc(draw)
+	glutIdleFunc(idle)
 	glutKeyboardFunc(keyPressed)  # Checks for key strokes
 	global params
 	params = common3dlighting.init()
@@ -35,6 +37,14 @@ def reshape(widthIn, heightIn):
 	gl.glDisable(gl.GL_CULL_FACE)
 	gl.glClearColor(0.8, 0.8, 0.8, 1.0)
 	glutPostRedisplay()
+
+def idle():
+	global lastDrawTime
+	now = time.time()
+	elapse = now - lastDrawTime
+	if elapse > 0.05:
+		glutPostRedisplay()
+		lastDrawTime = now
 
 def keyPressed(*args):
 	sys.exit()
