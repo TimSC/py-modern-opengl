@@ -194,9 +194,12 @@ def draw(params, aspect):
 	identityMvMatrix = np.array([[1.0, 0.0, 0.0, 0.0],
 							[0.0, 1.0, 0.0, 0.0],
 							[0.0, 0.0, 1.0, 0.0],
-							[0.0, 0.0, -5.0, 1.0]])
+							[0.0, 0.0, 0.0, 1.0]])
 	mvRotate1 = glutils.rotation_matrix((1., 0., 0.), time.time())
 	mvMatrix = np.dot(mvRotate1, identityMvMatrix)
+	mvRotate2 = glutils.rotation_matrix((0., 1., 0.), time.time()/ 5.)
+	mvMatrix = np.dot(mvRotate2, mvMatrix)
+	mvMatrix[3,2] = -5. #Translate
 	mvMatrix = np.array(mvMatrix.reshape((16,)), np.float32)
 
 	# use shader
