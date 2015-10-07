@@ -3,20 +3,26 @@ Examples of modern opengl shaders in python 2.7, based on glut, glfw and pyglfw 
 
 Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ and Patrick Skjennum https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
-2D
+<h3>2D</h3>
+
 * glfw_example2d.py - 2D example using [glfw](https://pypi.python.org/pypi/glfw)
 * glut_example2d.py - 2D example using glut
 * pyglfw_example2d.py - 2D example using [pyglfw](https://pypi.python.org/pypi/pyglfw)
-3D
+
+<h3>3D</h3>
+
 * glfw_example3d.py - 3D example using [glfw](https://pypi.python.org/pypi/glfw)
 * glut_example3d.py - 3D example using glut
-Texture
+
+<h3>Texture</h3>
+
 * glut_example3dtex.py - Texture example using glut
-Lighting
+
+<h3>Lighting</h3>
+
 * glut_example3dtex.py - Lit rotating cube using glut
 
-Copying
-=======
+<h2>Copying</h2>
 
 Copyright (c) 2012-2015, Tim Sheerman-Chase, Cyrille Rossant, Patrick Skjennum
 All rights reserved.
