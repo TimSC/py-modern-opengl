@@ -81,9 +81,6 @@ def init():
 	vertIndex = glGetAttribLocation(program, "aVert")
 	colorIndex = glGetAttribLocation(program, "aColor")
 
-	# color
-	col0 = [1.0, 1.0, 0.0, 1.0]
-
 	# define quad vertices
 	s = 0.9
 	quadV = [
@@ -188,7 +185,6 @@ def init():
 		'mvMatrixUniform': mvMatrixUniform, 
 		'colorIndex': colorIndex, 
 		'vertIndex': vertIndex, 
-		'col0': col0, 
 		'vertexBuffer': vertexBuffer,
 		'colBuffer': colBuffer}
 	out['lightPosUniform'] = lightPosUniform
@@ -201,7 +197,6 @@ def draw(params, aspect):
 	mvMatrixUniform = params['mvMatrixUniform']
 	colorIndex = params['colorIndex']
 	vertIndex = params['vertIndex']
-	col0 = params['col0']
 	vertexBuffer = params['vertexBuffer']
 	colBuffer = params['colBuffer']
 	lightPosUniform = params['lightPosUniform']
