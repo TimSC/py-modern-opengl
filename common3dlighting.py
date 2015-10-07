@@ -25,7 +25,6 @@ void main() {
   vec4 fragWorldTmp = uMVMatrix * vec4(aVert, 1.0); 
   gl_Position = uPMatrix * fragWorldTmp;
   fragWorld = vec3(fragWorldTmp);
-  // set color
   vCol = aColor;
   fragNormal = aVertNormal;
 }
@@ -38,8 +37,6 @@ in vec3 fragWorld;
 out vec4 fragColor;
 uniform mat4 uMVMatrix;
 uniform vec3 lightPos;
-uniform float test1 = 1;
-uniform float test2 = 10;
 
 void main() {
     //calculate normal in world coordinates
