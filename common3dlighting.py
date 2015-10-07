@@ -38,7 +38,9 @@ in vec3 fragWorld;
 out vec4 fragColor;
 uniform mat4 uMVMatrix;
 uniform vec3 lightPos;
-uniform vec3 lightCol;
+uniform float test1 = 1;
+uniform float test2 = 10;
+
 void main() {
     //calculate normal in world coordinates
     mat3 normalMatrix = transpose(inverse(mat3(uMVMatrix)));
@@ -53,7 +55,6 @@ void main() {
 
     // use vertex color
     fragColor = vCol * brightness;
-	//fragColor = vCol;
 }
 """
 
@@ -75,11 +76,11 @@ def init():
 	pMatrixUniform = glGetUniformLocation(program, 'uPMatrix')
 	mvMatrixUniform = glGetUniformLocation(program, "uMVMatrix")
 	lightPosUniform = glGetUniformLocation(program, 'lightPos')
-	lightColUniform = glGetUniformLocation(program, "lightCol")
 
 	# attributes
 	vertIndex = glGetAttribLocation(program, "aVert")
 	colorIndex = glGetAttribLocation(program, "aColor")
+	normalIndex = glGetAttribLocation(program, "aVertNormal")
 
 	# define quad vertices
 	s = 0.9
@@ -128,11 +129,62 @@ def init():
 			 s, s, -s,
 			 ]
 
-	# vertices
 	vertexBuffer = glGenBuffers(1)
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
 	vertexData = np.array(quadV, np.float32)
 	glBufferData(GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, GL_STATIC_DRAW)
+
+	# define normals
+	s = 1.
+	quadN = [
+			#Front
+			 0, 0, -s,
+			 0, 0, -s,
+			 0, 0, -s,
+			 0, 0, -s,
+			 0, 0, -s,
+			 0, 0, -s,
+			#Back
+			 0, 0, s,
+			 0, 0, s,
+			 0, 0, s,
+			 0, 0, s,
+			 0, 0, s,
+			 0, 0, s,
+			#Left
+			 s, 0, 0,
+			 s, 0, 0,
+			 s, 0, 0,
+			 s, 0, 0,
+			 s, 0, 0,
+			 s, 0, 0,
+			#Right
+			 -s, 0, 0,
+			 -s, 0, 0, 
+			 -s, 0, 0, 
+			 -s, 0, 0, 
+			 -s, 0, 0, 
+			 -s, 0, 0,  
+			#Top
+			 0, -s, 0,
+			 0, -s, 0,
+			 0, -s, 0,
+			 0, -s, 0,
+			 0, -s, 0,
+			 0, -s, 0,
+			#Bottom
+			 0, s, 0,
+			 0, s, 0,
+			 0, s, 0,
+			 0, s, 0,
+			 0, s, 0,
+			 0, s, 0,
+			 ]
+
+	normalBuffer = glGenBuffers(1)
+	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer)
+	normalData = np.array(quadN, np.float32)
+	glBufferData(GL_ARRAY_BUFFER, 4 * len(normalData), normalData, GL_STATIC_DRAW)
 
 	# define vertex colours
 
@@ -188,7 +240,8 @@ def init():
 		'vertexBuffer': vertexBuffer,
 		'colBuffer': colBuffer}
 	out['lightPosUniform'] = lightPosUniform
-	out['lightColUniform'] = lightColUniform
+	out['normalIndex'] = normalIndex
+	out['normalBuffer'] = normalBuffer
 	return out
 
 def draw(params, aspect):
@@ -200,7 +253,8 @@ def draw(params, aspect):
 	vertexBuffer = params['vertexBuffer']
 	colBuffer = params['colBuffer']
 	lightPosUniform = params['lightPosUniform']
-	lightColUniform = params['lightColUniform']
+	normalIndex = params['normalIndex']
+	normalBuffer = params['normalBuffer']
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	glEnable(GL_DEPTH_TEST)
@@ -241,18 +295,20 @@ def draw(params, aspect):
 	glUniformMatrix4fv(mvMatrixUniform, 1, GL_FALSE, mvMatrix)
 
 	# set lighting
-	glUniform3fv(lightPosUniform, 1, np.array([4., 4., -5.], np.float32))
-	glUniform3fv(lightColUniform, 1, np.array([1., 1., 0.], np.float32))
+	glUniform3fv(lightPosUniform, 1, np.array([2., 2., 0.], np.float32))
 
 	#enable arrays
 	glEnableVertexAttribArray(vertIndex)
 	glEnableVertexAttribArray(colorIndex)
+	glEnableVertexAttribArray(normalIndex)
 	
 	# set buffers
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)	
 	glVertexAttribPointer(vertIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
 	glBindBuffer(GL_ARRAY_BUFFER, colBuffer)
 	glVertexAttribPointer(colorIndex, 4, GL_FLOAT, GL_FALSE, 0, None)
+	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer)
+	glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
 
 	# draw
 	glDrawArrays(GL_TRIANGLES, 0, 36)
