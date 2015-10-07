@@ -12,25 +12,48 @@ import vrml.vrml97.transformmatrix as tr
 
 strVS = """
 #version 330 core
-attribute vec3 aVert;
+in vec3 aVert;
+in vec3 aVertNormal;
+in vec4 aColor;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
-attribute vec4 aColor;
 out vec4 vCol;
+out vec3 fragNormal;
+out vec3 fragWorld;
 void main() {
   // set position
-  gl_Position = uPMatrix * uMVMatrix * vec4(aVert, 1.0); 
+  vec4 fragWorldTmp = uMVMatrix * vec4(aVert, 1.0); 
+  gl_Position = uPMatrix * fragWorldTmp;
+  fragWorld = vec3(fragWorldTmp);
   // set color
   vCol = aColor;
+  fragNormal = aVertNormal;
 }
 """
 strFS = """
 #version 330 core
 in vec4 vCol;
+in vec3 fragNormal;
+in vec3 fragWorld;
 out vec4 fragColor;
+uniform mat4 uMVMatrix;
+uniform vec3 lightPos;
+uniform vec3 lightCol;
 void main() {
-  // use vertex color
-  fragColor = vCol;
+    //calculate normal in world coordinates
+    mat3 normalMatrix = transpose(inverse(mat3(uMVMatrix)));
+    vec3 normal = normalize(normalMatrix * fragNormal);
+
+    //calculate the vector from this pixels surface to the light source
+    vec3 surfaceToLight = lightPos - fragWorld;
+
+	//calculate the cosine of the angle of incidence
+    float brightness = dot(normal, surfaceToLight) / (length(surfaceToLight) * length(normal));
+    brightness = clamp(brightness, 0, 1);
+
+    // use vertex color
+    fragColor = vCol * brightness;
+	//fragColor = vCol;
 }
 """
 
@@ -51,6 +74,8 @@ def init():
 
 	pMatrixUniform = glGetUniformLocation(program, 'uPMatrix')
 	mvMatrixUniform = glGetUniformLocation(program, "uMVMatrix")
+	lightPosUniform = glGetUniformLocation(program, 'lightPos')
+	lightColUniform = glGetUniformLocation(program, "lightCol")
 
 	# attributes
 	vertIndex = glGetAttribLocation(program, "aVert")
@@ -166,6 +191,8 @@ def init():
 		'col0': col0, 
 		'vertexBuffer': vertexBuffer,
 		'colBuffer': colBuffer}
+	out['lightPosUniform'] = lightPosUniform
+	out['lightColUniform'] = lightColUniform
 	return out
 
 def draw(params, aspect):
@@ -177,6 +204,8 @@ def draw(params, aspect):
 	col0 = params['col0']
 	vertexBuffer = params['vertexBuffer']
 	colBuffer = params['colBuffer']
+	lightPosUniform = params['lightPosUniform']
+	lightColUniform = params['lightColUniform']
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	glEnable(GL_DEPTH_TEST)
@@ -215,6 +244,10 @@ def draw(params, aspect):
 
 	# set modelview matrix
 	glUniformMatrix4fv(mvMatrixUniform, 1, GL_FALSE, mvMatrix)
+
+	# set lighting
+	glUniform3fv(lightPosUniform, 1, np.array([4., 4., -5.], np.float32))
+	glUniform3fv(lightColUniform, 1, np.array([1., 1., 0.], np.float32))
 
 	#enable arrays
 	glEnableVertexAttribArray(vertIndex)
