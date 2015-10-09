@@ -53,7 +53,7 @@ uniform sampler2D uTexture;
 out vec4 fragColor;
 
 void main() {
-    //calculate normal in world coordinates
+    //calculate normal and tangents in world coordinates
     mat3 normalMatrix = transpose(inverse(mat3(uMVMatrix)));
     vec3 normal_world = normalize(normalMatrix * fragNormal);
     vec3 tangent_world = normalize(normalMatrix * tangent);
@@ -61,8 +61,8 @@ void main() {
 
 	vec3 bumpRGB = texture(uTexture, uv).rgb;
 	vec3 bumpScaled = bumpRGB * 2. - 1;
-	vec3 bumpNormal = bumpScaled[0] * tangent_world +
-		bumpScaled[1] * bitangent_world +
+	vec3 bumpNormal = bumpScaled[1] * tangent_world +
+		bumpScaled[0] * bitangent_world +
 		bumpScaled[2] * normal_world;
 	
     //calculate the vector from this pixels surface to the light source
@@ -73,11 +73,7 @@ void main() {
     brightness = clamp(brightness, 0, 1);
 
     // use vertex color
-	vec3 tmp = tangent * 0.001 + 0.999;
-	vec3 tmp2 = bitangent * 0.001 + 0.999;
-	vec3 tmp3 = bumpScaled * 0.001 + 0.999;
-	
-    fragColor = vCol * brightness * tmp[0] * tmp2[0] * tmp3[0];
+    fragColor = vCol * brightness;
 }
 """
 

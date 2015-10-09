@@ -22,6 +22,10 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 
 * glut_example3dtex.py - Lit rotating cube using glut
 
+<h3>Lighting</h3>
+
+* glut_example3dnormals.py - Normal mapped rotating cube in glut
+
 <h2>Copying</h2>
 
 Copyright (c) 2012-2015, Tim Sheerman-Chase, Cyrille Rossant, Patrick Skjennum
