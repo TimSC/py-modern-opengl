@@ -16,11 +16,17 @@ strVS = """
 in vec3 aVert;
 in vec3 aVertNormal;
 in vec4 aColor;
+in vec3 aTangent;
+in vec3 aBitangent;
+in vec2 aUV;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 out vec4 vCol;
 out vec3 fragNormal;
 out vec3 fragWorld;
+out vec3 tangent;
+out vec3 bitangent;
+out vec2 uv;
 void main() {
   // set position
   vec4 fragWorldTmp = uMVMatrix * vec4(aVert, 1.0); 
@@ -28,6 +34,9 @@ void main() {
   fragWorld = vec3(fragWorldTmp);
   vCol = aColor;
   fragNormal = aVertNormal;
+  tangent = aTangent;
+  bitangent = aBitangent;
+  uv = aUV;
 }
 """
 strFS = """
@@ -35,9 +44,13 @@ strFS = """
 in vec4 vCol;
 in vec3 fragNormal;
 in vec3 fragWorld;
-out vec4 fragColor;
+in vec3 tangent;
+in vec3 bitangent;
+in vec2 uv;
 uniform mat4 uMVMatrix;
 uniform vec3 lightPos;
+uniform sampler2D uTexture;
+out vec4 fragColor;
 
 void main() {
     //calculate normal in world coordinates
@@ -52,7 +65,13 @@ void main() {
     brightness = clamp(brightness, 0, 1);
 
     // use vertex color
-    fragColor = vCol * brightness;
+	vec3 normalRGB = texture(uTexture, uv).rgb;
+	vec4 normalRGBA = vec4(normalRGB[0], normalRGB[1], normalRGB[2], 1.);
+	vec3 tmp = tangent * 0.001 + 0.999;
+	vec3 tmp2 = bitangent * 0.001 + 0.999;
+	vec3 tmp3 = normalRGB * 0.001 + 0.999;
+	
+    fragColor = vCol * brightness * tmp[0] * tmp2[0] * tmp3[0];
 }
 """
 
@@ -69,6 +88,19 @@ def loadtexture(filename):
  	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
 	glBindTexture(GL_TEXTURE_2D, 0)
 	return texIndex
+
+def calcTangentsTri(verts, normals, uvs):
+	deltaPos1 = verts[1]-verts[0];
+	deltaPos2 = verts[2]-verts[0];
+	deltaUV1 = uvs[1]-uvs[0];
+	deltaUV2 = uvs[2]-uvs[0];
+	normal = normals.mean(axis=0)
+	
+	r = 1.0 / (deltaUV1[0] * deltaUV2[1] - deltaUV1[1] * deltaUV2[0])
+	tangent = (deltaPos1 * deltaUV2[1] - deltaPos2 * deltaUV1[1])*r
+	bitangent = (deltaPos2 * deltaUV1[0] - deltaPos1 * deltaUV2[0])*r
+
+	return list(tangent), list(bitangent)
 
 # initialization
 def init():
@@ -88,12 +120,15 @@ def init():
 	pMatrixUniform = glGetUniformLocation(program, 'uPMatrix')
 	mvMatrixUniform = glGetUniformLocation(program, "uMVMatrix")
 	lightPosUniform = glGetUniformLocation(program, 'lightPos')
-	textureUniform = glGetUniformLocation(program, "texture")
+	textureUniform = glGetUniformLocation(program, "uTexture")
 
 	# attributes
 	vertIndex = glGetAttribLocation(program, "aVert")
 	colorIndex = glGetAttribLocation(program, "aColor")
 	normalIndex = glGetAttribLocation(program, "aVertNormal")
+	tangentIndex = glGetAttribLocation(program, "aTangent")
+	bitangentIndex = glGetAttribLocation(program, "aBitangent")
+	uvIndex = glGetAttribLocation(program, "aUV")
 
 	# define quad vertices
 	s = 0.9
@@ -245,13 +280,46 @@ def init():
 	colData = np.array(vcol, np.float32).reshape(vcol.size)
 	glBufferData(GL_ARRAY_BUFFER, 4 * len(colData), colData, GL_STATIC_DRAW)
 
-	texIndex = loadtexture("normalmap.jpg")
+	#UV texture data
+
+	quadUV = np.array([
+			 [0., 0.,],[0., 1.,],[1., 0.,],[1., 0.,],[0., 1.,],[1., 1.],
+			 [0., 0.,],[0., 1.,],[1., 0.,],[1., 0.,],[0., 1.,],[1., 1.],
+			 [0., 0.,],[0., 1.,],[1., 0.,],[1., 0.,],[0., 1.,],[1., 1.],
+			 [0., 0.,],[0., 1.,],[1., 0.,],[1., 0.,],[0., 1.,],[1., 1.],
+			 [0., 0.,],[0., 1.,],[1., 0.,],[1., 0.,],[0., 1.,],[1., 1.],
+			 [0., 0.,],[0., 1.,],[1., 0.,],[1., 0.,],[0., 1.,],[1., 1.],
+			 ])
+
+	uvBuffer = glGenBuffers(1)
+	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer)
+	uvData = np.array(quadUV, np.float32).reshape(quadUV.size)
+	glBufferData(GL_ARRAY_BUFFER, 4 * len(uvData), uvData, GL_STATIC_DRAW)
+
+	#Load textures and maps
+	normalTexIndex = loadtexture("normalmap.jpg")
 
 	#Compute tangents
-	for triIndex in range(0, len(quadN), 3):
-		verts = quadN[triIndex:triIndex+3, :]
-		print verts
+	tangents, bitangents = [], []
+	for triIndex in range(0, len(quadV), 3):
+		faceVerts = quadV[triIndex:triIndex+3, :]
+		faceNormals = quadN[triIndex:triIndex+3, :]
+		faceUVs = quadUV[triIndex:triIndex+3, :]
+		tangent, bitangent = calcTangentsTri(faceVerts, faceNormals, faceUVs)
+		tangents.extend([tangent, tangent, tangent])
+		bitangents.extend([bitangent, bitangent, bitangent])
+	tangents = np.array(tangents)
+	bitangents = np.array(bitangents)
 
+	tangentsBuffer = glGenBuffers(1)
+	glBindBuffer(GL_ARRAY_BUFFER, tangentsBuffer)
+	tangentData = np.array(tangents, np.float32).reshape(tangents.size)
+	glBufferData(GL_ARRAY_BUFFER, 4 * len(tangentData), tangentData, GL_STATIC_DRAW)
+
+	bitangentsBuffer = glGenBuffers(1)
+	glBindBuffer(GL_ARRAY_BUFFER, bitangentsBuffer)
+	bitangentsData = np.array(bitangents, np.float32).reshape(bitangents.size)
+	glBufferData(GL_ARRAY_BUFFER, 4 * len(bitangentsData), bitangentsData, GL_STATIC_DRAW)
 
 	out = {'program': program, 
 		'pMatrixUniform': pMatrixUniform, 
@@ -264,7 +332,12 @@ def init():
 	out['normalIndex'] = normalIndex
 	out['normalBuffer'] = normalBuffer
 	out['textureUniform'] = textureUniform
-	out['texIndex'] = texIndex
+	out['uvIndex'] = uvIndex
+	out['normalTexIndex'] = normalTexIndex
+	out['tangentIndex'] = tangentIndex
+	out['bitangentIndex'] = bitangentIndex
+	out['tangentsBuffer'] = tangentsBuffer
+	out['bitangentsBuffer'] = bitangentsBuffer
 	
 	return out
 
@@ -280,7 +353,12 @@ def draw(params, aspect):
 	normalIndex = params['normalIndex']
 	normalBuffer = params['normalBuffer']
 	textureUniform = params['textureUniform']
-	texIndex = params['texIndex']
+	uvIndex = params['uvIndex']
+	normalTexIndex = params['normalTexIndex']
+	tangentIndex = params['tangentIndex']
+	bitangentIndex = params['bitangentIndex']
+	tangentsBuffer = params['tangentsBuffer']
+	bitangentsBuffer = params['bitangentsBuffer']
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	glEnable(GL_DEPTH_TEST)
@@ -323,6 +401,10 @@ def draw(params, aspect):
 	# set lighting
 	glUniform3fv(lightPosUniform, 1, np.array([2., 2., 0.], np.float32))
 
+	#enable normal map
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, normalTexIndex)
+
 	#enable arrays
 	glEnableVertexAttribArray(vertIndex)
 	glEnableVertexAttribArray(colorIndex)
@@ -336,10 +418,20 @@ def draw(params, aspect):
 	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer)
 	glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
 
+	glBindBuffer(GL_ARRAY_BUFFER, tangentsBuffer)
+	glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
+	#glBindBuffer(GL_ARRAY_BUFFER, bitangentsBuffer)
+	#glVertexAttribPointer(bitangentIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
+
 	# draw
 	glDrawArrays(GL_TRIANGLES, 0, 36)
 
 	# disable arrays
 	glDisableVertexAttribArray(vertIndex)
 	glDisableVertexAttribArray(colorIndex)
+	glDisableVertexAttribArray(normalIndex)
+
+	glDisableVertexAttribArray(tangentIndex)
+	#glDisableVertexAttribArray(bitangentIndex)
+
 
