@@ -55,23 +55,30 @@ out vec4 fragColor;
 void main() {
     //calculate normal in world coordinates
     mat3 normalMatrix = transpose(inverse(mat3(uMVMatrix)));
-    vec3 normal = normalize(normalMatrix * fragNormal);
+    vec3 normal_world = normalize(normalMatrix * fragNormal);
+    vec3 tangent_world = normalize(normalMatrix * tangent);
+    vec3 bitangent_world = normalize(normalMatrix * bitangent);
 
+	vec3 bumpRGB = texture(uTexture, uv).rgb;
+	vec3 bumpScaled = bumpRGB * 2. - 1;
+	normal_world *= bumpScaled[2];
+	
     //calculate the vector from this pixels surface to the light source
     vec3 surfaceToLight = lightPos - fragWorld;
 
 	//calculate the cosine of the angle of incidence
-    float brightness = dot(normal, surfaceToLight) / (length(surfaceToLight) * length(normal));
+    float brightness = dot(normal_world, surfaceToLight) / (length(surfaceToLight) * length(normal_world));
     brightness = clamp(brightness, 0, 1);
 
     // use vertex color
-	vec3 normalRGB = texture(uTexture, uv).rgb;
-	vec4 normalRGBA = vec4(normalRGB[0], normalRGB[1], normalRGB[2], 1.);
 	vec3 tmp = tangent * 0.001 + 0.999;
 	vec3 tmp2 = bitangent * 0.001 + 0.999;
-	vec3 tmp3 = normalRGB * 0.001 + 0.999;
+	vec3 tmp3 = bumpScaled * 0.001 + 0.999;
 	
     fragColor = vCol * brightness * tmp[0] * tmp2[0] * tmp3[0];
+	fragColor[0] = bumpRGB[0];
+	fragColor[1] = bumpRGB[1];
+	fragColor[2] = bumpRGB[2];
 }
 """
 
@@ -84,7 +91,7 @@ def loadtexture(filename):
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 	img = Image.open(filename) # .jpg, .bmp, etc. also work
-	img_data = np.array(list(img.getdata()), np.int8)
+	img_data = np.array(list(img.getdata()), np.uint8)
  	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
 	glBindTexture(GL_TEXTURE_2D, 0)
 	return texIndex
@@ -120,7 +127,7 @@ def init():
 	pMatrixUniform = glGetUniformLocation(program, 'uPMatrix')
 	mvMatrixUniform = glGetUniformLocation(program, "uMVMatrix")
 	lightPosUniform = glGetUniformLocation(program, 'lightPos')
-	textureUniform = glGetUniformLocation(program, "uTexture")
+	#textureUniform = glGetUniformLocation(program, "uTexture")
 
 	# attributes
 	vertIndex = glGetAttribLocation(program, "aVert")
@@ -331,8 +338,8 @@ def init():
 	out['lightPosUniform'] = lightPosUniform
 	out['normalIndex'] = normalIndex
 	out['normalBuffer'] = normalBuffer
-	out['textureUniform'] = textureUniform
 	out['uvIndex'] = uvIndex
+	out['uvBuffer'] = uvBuffer
 	out['normalTexIndex'] = normalTexIndex
 	out['tangentIndex'] = tangentIndex
 	out['bitangentIndex'] = bitangentIndex
@@ -352,8 +359,8 @@ def draw(params, aspect):
 	lightPosUniform = params['lightPosUniform']
 	normalIndex = params['normalIndex']
 	normalBuffer = params['normalBuffer']
-	textureUniform = params['textureUniform']
 	uvIndex = params['uvIndex']
+	uvBuffer = params['uvBuffer']
 	normalTexIndex = params['normalTexIndex']
 	tangentIndex = params['tangentIndex']
 	bitangentIndex = params['bitangentIndex']
@@ -409,6 +416,9 @@ def draw(params, aspect):
 	glEnableVertexAttribArray(vertIndex)
 	glEnableVertexAttribArray(colorIndex)
 	glEnableVertexAttribArray(normalIndex)
+	glEnableVertexAttribArray(tangentIndex)
+	glEnableVertexAttribArray(bitangentIndex)
+	glEnableVertexAttribArray(uvIndex)
 	
 	# set buffers
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)	
@@ -420,8 +430,10 @@ def draw(params, aspect):
 
 	glBindBuffer(GL_ARRAY_BUFFER, tangentsBuffer)
 	glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
-	#glBindBuffer(GL_ARRAY_BUFFER, bitangentsBuffer)
-	#glVertexAttribPointer(bitangentIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
+	glBindBuffer(GL_ARRAY_BUFFER, bitangentsBuffer)
+	glVertexAttribPointer(bitangentIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
+	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer)
+	glVertexAttribPointer(uvIndex, 2, GL_FLOAT, GL_FALSE, 0, None)
 
 	# draw
 	glDrawArrays(GL_TRIANGLES, 0, 36)
@@ -432,6 +444,6 @@ def draw(params, aspect):
 	glDisableVertexAttribArray(normalIndex)
 
 	glDisableVertexAttribArray(tangentIndex)
-	#glDisableVertexAttribArray(bitangentIndex)
-
+	glDisableVertexAttribArray(bitangentIndex)
+	glDisableVertexAttribArray(uvIndex)
 

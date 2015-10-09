@@ -91,7 +91,7 @@ def init():
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 	img = Image.open("butterfly.JPG") # .jpg, .bmp, etc. also work
-	img_data = numpy.array(list(img.getdata()), numpy.int8)
+	img_data = numpy.array(list(img.getdata()), numpy.uint8)
  	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
 	glBindTexture(GL_TEXTURE_2D, 0)
 
