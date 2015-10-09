@@ -61,13 +61,15 @@ void main() {
 
 	vec3 bumpRGB = texture(uTexture, uv).rgb;
 	vec3 bumpScaled = bumpRGB * 2. - 1;
-	normal_world *= bumpScaled[2];
+	vec3 bumpNormal = bumpScaled[0] * tangent_world +
+		bumpScaled[1] * bitangent_world +
+		bumpScaled[2] * normal_world;
 	
     //calculate the vector from this pixels surface to the light source
     vec3 surfaceToLight = lightPos - fragWorld;
 
 	//calculate the cosine of the angle of incidence
-    float brightness = dot(normal_world, surfaceToLight) / (length(surfaceToLight) * length(normal_world));
+    float brightness = dot(bumpNormal, surfaceToLight) / (length(surfaceToLight) * length(bumpNormal));
     brightness = clamp(brightness, 0, 1);
 
     // use vertex color
@@ -76,9 +78,6 @@ void main() {
 	vec3 tmp3 = bumpScaled * 0.001 + 0.999;
 	
     fragColor = vCol * brightness * tmp[0] * tmp2[0] * tmp3[0];
-	fragColor[0] = bumpRGB[0];
-	fragColor[1] = bumpRGB[1];
-	fragColor[2] = bumpRGB[2];
 }
 """
 
