@@ -29,7 +29,6 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 <h2>Copying</h2>
 
 Copyright (c) 2012-2015, Tim Sheerman-Chase, Cyrille Rossant, Patrick Skjennum
-Copyright (c) 1995-2012, Michael C. Fletcher and Contributors
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -44,7 +43,7 @@ are met:
 	disclaimer in the documentation and/or other materials
 	provided with the distribution.
 
-	The name of Michael C. Fletcher, or the name of any Contributor,
+	The name of Tim Sheerman-Chase, or the name of any Contributor,
 	may not be used to endorse or promote products derived from this 
 	software without specific prior written permission.
 	
@@ -60,4 +59,28 @@ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 OF THE POSSIBILITY OF SUCH DAMAGE. 
+
+<h3>Based on the Mesa 3D library</h3>
+
+Mesa 3-D graphics library
+
+Copyright (C) 1999-2005  Brian Paul   All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
 
