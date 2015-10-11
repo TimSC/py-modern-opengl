@@ -22,9 +22,13 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 
 * glut_example3dtex.py - Lit rotating cube using glut
 
-<h3>Lighting</h3>
+<h3>Normal mapping, aka bump mapping</h3>
 
 * glut_example3dnormals.py - Normal mapped rotating cube in glut
+
+<h3>Normal mapping with texture</h3>
+
+* glut_example3dtexnorms.py - Normal mapped, textured, rotating cube in glut
 
 <h2>Copying</h2>
 
