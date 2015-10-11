@@ -1,4 +1,5 @@
 #Based on https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
+#and tips from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping
 
 import OpenGL
 from OpenGL.GL import *
@@ -61,8 +62,8 @@ void main() {
 
 	vec3 bumpRGB = texture(uTexture, uv).rgb;
 	vec3 bumpScaled = bumpRGB * 2. - 1;
-	vec3 bumpNormal = bumpScaled[1] * tangent_world +
-		bumpScaled[0] * bitangent_world +
+	vec3 bumpNormal = bumpScaled[0] * tangent_world +
+		bumpScaled[1] * bitangent_world +
 		bumpScaled[2] * normal_world;
 	
     //calculate the vector from this pixels surface to the light source
@@ -91,6 +92,12 @@ def loadtexture(filename):
 	glBindTexture(GL_TEXTURE_2D, 0)
 	return texIndex
 
+def normalize(vec):
+	mag=np.linalg.norm(vec)
+	if mag>0.: 
+		return vec/mag
+	return v
+
 def calcTangentsTri(verts, normals, uvs):
 	deltaPos1 = verts[1]-verts[0];
 	deltaPos2 = verts[2]-verts[0];
@@ -101,6 +108,11 @@ def calcTangentsTri(verts, normals, uvs):
 	r = 1.0 / (deltaUV1[0] * deltaUV2[1] - deltaUV1[1] * deltaUV2[0])
 	tangent = (deltaPos1 * deltaUV2[1] - deltaPos2 * deltaUV1[1])*r
 	bitangent = (deltaPos2 * deltaUV1[0] - deltaPos1 * deltaUV2[0])*r
+	tangent = normalize(tangent - normal * np.dot(normal, tangent)) #orthogonalize
+
+	#Check for right handed system
+	if np.dot(np.cross(normal, tangent), bitangent) < 0.:
+		tangent *= -1.
 
 	return list(tangent), list(bitangent)
 
@@ -299,7 +311,7 @@ def init():
 	glBufferData(GL_ARRAY_BUFFER, 4 * len(uvData), uvData, GL_STATIC_DRAW)
 
 	#Load textures and maps
-	normalTexIndex = loadtexture("normalmap.jpg")
+	normalTexIndex = loadtexture("brick-normalmap.jpg")
 
 	#Compute tangents
 	tangents, bitangents = [], []

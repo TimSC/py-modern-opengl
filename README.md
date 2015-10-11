@@ -1,5 +1,5 @@
 # py-modern-opengl
-Examples of modern opengl shaders in python 2.7, based on glut, glfw and pyglfw frameworks.
+Examples of modern opengl 3.3+ shaders in python 2.7, based on glut, glfw and pyglfw frameworks.
 
 Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ and Patrick Skjennum https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
@@ -83,4 +83,8 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
+
+<h3>Textures</h3>
+
+Brick texture and normal map from http://opengameart.org/content/50-free-textures-4-normalmaps
 
