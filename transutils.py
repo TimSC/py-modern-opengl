@@ -21,12 +21,13 @@ def transMatrix(x, y, z):
 	T = [ [1.,0.,0.,0.], [0.,1.,0.,0.], [0.,0.,1.,0.], [x,y,z,1] ]
 	return T
 
-def rotMatrix(x, y, z, angDeg):
+def rotMatrix(angDeg, x, y, z):
 
 	#Based on https://github.com/freedreno/mesa/blob/383558c56427b0e8b4e56cce8737771ad053f753/src/mesa/math/m_matrix.c
 	M = identityMatrix()
-	s = math.sin(math.radians(angDeg))
-	c = math.cos(math.radians(angDeg))
+	angRad = math.radians(angDeg)
+	s = math.sin(-angRad)
+	c = math.cos(-angRad)
 	mag = math.sqrt(x * x + y * y + z * z)
 
 	if mag <= 1.0e-4:
@@ -105,27 +106,27 @@ def rotMatrix(x, y, z, angDeg):
 	row0[0] = (one_c * xx) + c;
 	row0[1] = (one_c * xy) - zs;
 	row0[2] = (one_c * zx) + ys;
-#	row0[3] = 0.0F;
+#	row0[3] = 0.0;
 
 	row1 = M[1]
 	row1[0] = (one_c * xy) + zs;
 	row1[1] = (one_c * yy) + c;
 	row1[2] = (one_c * yz) - xs;
-#	row1[3] = 0.0F; 
+#	row1[3] = 0.0; 
 
 	row2 = M[2]
 	row2[0] = (one_c * zx) - ys;
 	row2[1] = (one_c * yz) + xs;
 	row2[2] = (one_c * zz) + c;
-#	row2[3] = 0.0F; 
+#	row2[3] = 0.0; 
 
 #	row3 = M[3]
-#	row3[0] = 0.0F;
-#	row3[1] = 0.0F;
-#	row3[2] = 0.0F;
-#	row3[3] = 1.0F;
+#	row3[0] = 0.0;
+#	row3[1] = 0.0;
+#	row3[2] = 0.0;
+#	row3[3] = 1.0;
 
-	return M
+	return np.array(M)
 
 
 if __name__ == "__main__":
@@ -155,17 +156,15 @@ if __name__ == "__main__":
 		trans = np.array(transMatrix(*vec))
 		mat = np.dot(trans, mat)
 		print "predicted 1", mat
-		gl.glLoadMatrixf(list(mat.reshape(mat.size)))
-
+		
 		vec = list(4. * np.random.random((1,3))[0] - 2.)
 		ang = 4. * math.pi * np.random.random() - 2
-		print vec, ang
-		gl.glRotated(vec[0], vec[1], vec[2], ang)
+		gl.glRotated(ang, vec[0], vec[1], vec[2])
 		correct = gl.glGetFloatv(gl.GL_MODELVIEW_MATRIX)
 		print "correct 2", correct
 
-		rot = np.array(rotMatrix(vec[0], vec[1], vec[2], ang))
+		rot = np.array(rotMatrix(ang, vec[0], vec[1], vec[2]))
 		mat = np.dot(rot, mat)
 		print "predicted 2", mat
-		gl.glLoadMatrixf(list(mat.reshape(mat.size)))
+
 
