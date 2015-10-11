@@ -126,7 +126,7 @@ def rotMatrix(angDeg, x, y, z):
 #	row3[2] = 0.0;
 #	row3[3] = 1.0;
 
-	return np.array(M)
+	return M
 
 
 if __name__ == "__main__":

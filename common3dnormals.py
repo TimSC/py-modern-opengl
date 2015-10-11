@@ -8,7 +8,7 @@ from OpenGL.GLU import *
 from OpenGL.arrays import vbo
 import numpy as np
 import math, sys, time
-import vrml.vrml97.transformmatrix as tr
+import transutils
 from PIL import Image
 
 strVS = """
@@ -384,9 +384,9 @@ def draw(params, aspect):
 	numPi = int(test / math.pi)
 
 	mvMatrix = identityMvMatrix
-	mvRotate1 = tr.rotMatrix([1., 0., 0., time.clock()])[0]
+	mvRotate1 = transutils.rotMatrix(time.clock()*20., 1., 0., 0., )
 	mvMatrix = np.dot(mvRotate1, mvMatrix)
-	mvRotate2 = tr.rotMatrix([0., 1., 0., time.clock()/5.])[0]
+	mvRotate2 = transutils.rotMatrix(time.clock()*5., 0., 1., 0.)
 	mvMatrix = np.dot(mvRotate2, mvMatrix)
 	mvMatrix[3,2] = -5. #Translate
 	mvMatrix = np.array(mvMatrix.reshape((16,)), np.float32)
