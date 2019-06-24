@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import common2d, sys
 import OpenGL.GLUT as glut
 import OpenGL.GL as gl

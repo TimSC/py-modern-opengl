@@ -1,5 +1,6 @@
 #Based on https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
+from __future__ import print_function
 from OpenGL.GLUT import *
 from OpenGL.GLUT.freeglut import *
 import common3dnormals, time

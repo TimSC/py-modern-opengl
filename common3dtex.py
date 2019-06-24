@@ -1,5 +1,6 @@
 #Based on https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
+from __future__ import print_function
 import OpenGL
 from OpenGL.GL import *
 import OpenGL.GL as gl
@@ -33,9 +34,9 @@ void main() {
 
 # initialization
 def init():
-	versionString = gl.glGetString(gl.GL_VERSION).split(" ")
+	versionString = gl.glGetString(gl.GL_VERSION).split(b" ")
 	openglVersionString = versionString[0]
-	openglVersionNums = map(int, openglVersionString.split("."))
+	openglVersionNums = list(map(int, openglVersionString.split(b".")))
 	if openglVersionNums[0] < 3 or (openglVersionNums[0] == 3 and openglVersionNums[1] < 3):
 		exit("Requires opengl 3.3 or better, you have {0}".format(openglVersionString))
 
@@ -92,7 +93,7 @@ def init():
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 	img = Image.open("butterfly.JPG") # .jpg, .bmp, etc. also work
 	img_data = numpy.array(list(img.getdata()), numpy.uint8)
- 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
 	glBindTexture(GL_TEXTURE_2D, 0)
 
 	out = {'program': program, 

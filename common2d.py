@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #Based on http://cyrille.rossant.net/shaders-opengl/
 
+from __future__ import print_function
 import numpy as np
 import OpenGL.GL as gl
 import OpenGL.arrays.vbo as glvbo
@@ -92,9 +93,9 @@ def link_shader_program(vertex_shader, fragment_shader):
 	return program
 
 def init_shader_program():
-	versionString = gl.glGetString(gl.GL_VERSION).split(" ")
+	versionString = gl.glGetString(gl.GL_VERSION).split(b" ")
 	openglVersionString = versionString[0]
-	openglVersionNums = map(int, openglVersionString.split("."))
+	openglVersionNums = list(map(int, openglVersionString.split(b".")))
 	if openglVersionNums[0] < 3 or (openglVersionNums[0] == 3 and openglVersionNums[1] < 3):
 		exit("Requires opengl 3.3 or better, you have {0}".format(openglVersionString))
 

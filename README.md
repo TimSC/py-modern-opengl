@@ -3,6 +3,8 @@ Examples of modern opengl 3.3+ shaders in python 2.7, based on glut, glfw and py
 
 Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ and Patrick Skjennum https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
+   sudo pip install pyopengl pyglut
+
 <h3>2D</h3>
 
 * glfw_example2d.py - 2D example using [glfw](https://pypi.python.org/pypi/glfw)

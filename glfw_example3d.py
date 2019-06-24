@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import glfw, common3d
 import OpenGL.GL as gl
 
 def error_callback():
-	print "error_callback"
+	print ("error_callback")
 
 def main():
 	# Initialize the library

@@ -1,4 +1,4 @@
-
+from __future__ import print_function
 import math
 
 def identityMatrix():
@@ -151,20 +151,20 @@ if __name__ == "__main__":
 		vec = list(100. * np.random.random((1,3))[0] - 50.)
 		gl.glTranslated(*vec)
 		correct = gl.glGetFloatv(gl.GL_MODELVIEW_MATRIX)
-		print "correct 1 ", correct
+		print ("correct 1 ", correct)
 
 		trans = np.array(transMatrix(*vec))
 		mat = np.dot(trans, mat)
-		print "predicted 1", mat
+		print ("predicted 1", mat)
 		
 		vec = list(4. * np.random.random((1,3))[0] - 2.)
 		ang = 4. * math.pi * np.random.random() - 2
 		gl.glRotated(ang, vec[0], vec[1], vec[2])
 		correct = gl.glGetFloatv(gl.GL_MODELVIEW_MATRIX)
-		print "correct 2", correct
+		print ("correct 2", correct)
 
 		rot = np.array(rotMatrix(ang, vec[0], vec[1], vec[2]))
 		mat = np.dot(rot, mat)
-		print "predicted 2", mat
+		print ("predicted 2", mat)
 
 
