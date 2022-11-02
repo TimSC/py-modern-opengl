@@ -41,7 +41,7 @@ def reshape(widthIn, heightIn):
 
 def idle():
 	global lastDrawTime
-	now = time.clock()
+	now = time.time()
 	elapse = now - lastDrawTime
 	if elapse > 0.05:
 		glutPostRedisplay()

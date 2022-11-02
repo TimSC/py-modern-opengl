@@ -393,13 +393,13 @@ def draw(params, aspect):
 							[0.0, 1.0, 0.0, 0.0],
 							[0.0, 0.0, 1.0, 0.0],
 							[0.0, 0.0, 0.0, 1.0]])
-	test = time.clock()
+	test = time.time()
 	numPi = int(test / math.pi)
 
 	mvMatrix = identityMvMatrix
-	mvRotate1 = transutils.rotMatrix(time.clock()*20., 1., 0., 0., )
+	mvRotate1 = transutils.rotMatrix(time.time()*20., 1., 0., 0., )
 	mvMatrix = np.dot(mvRotate1, mvMatrix)
-	mvRotate2 = transutils.rotMatrix(time.clock()*5., 0., 1., 0.)
+	mvRotate2 = transutils.rotMatrix(time.time()*5., 0., 1., 0.)
 	mvMatrix = np.dot(mvRotate2, mvMatrix)
 	mvMatrix[3,2] = -5. #Translate
 	mvMatrix = np.array(mvMatrix.reshape((16,)), np.float32)
