@@ -3,7 +3,17 @@ Examples of modern opengl 3.3+ shaders in python 3, based on glut, glfw, pyglfw 
 
 Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ and Patrick Skjennum https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
-   sudo pip install pyopengl pyglut
+    pip install -r requirements.txt
+
+The GLUT examples also need the freeglut library from your system (for example `apt install freeglut3-dev`). The examples ask for an OpenGL 3.3 core profile (the Quake II style one for 3.2).
+
+<h3>Self-check</h3>
+
+Every runner (except pyglfw_example2d.py) takes `--frames N [--shot file.png]`. It draws N frames, then checks the last one: no OpenGL error, and not blank (more than one colour). It saves the frame if asked, then exits with status 0 or 1. See selfcheck.py.
+
+    python check_examples.py [--frames N] [--out DIR] [--timeout S]
+
+runs all the examples that way, one process each, and prints PASS, FAIL or SKIP (window toolkit not installed) for each.
 
 <h3>2D</h3>
 
@@ -22,7 +32,7 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 
 <h3>Lighting</h3>
 
-* glut_example3dtex.py - Lit rotating cube using glut
+* glut_example3dlighting.py - Lit rotating cube using glut
 
 <h3>Normal mapping, aka bump mapping</h3>
 
@@ -35,7 +45,7 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 <h3>Quake II style shaders</h3>
 
 * glut_example3dadvanced.py - Quake II gl3 renderer shaders (Yamagi Quake II) on cubes floating in space, in glut
-* pygame_example3dadvanced.py - The same in pygame (`--seconds S`, `--frames N`, `--shot file.png`)
+* pygame_example3dadvanced.py - The same in pygame (`--seconds S` to stop after S seconds)
 
 common3dadvanced.py uses the GLSL shaders and setup code of the Yamagi Quake II gl3 renderer. Each cube shows one shader:
 

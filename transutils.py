@@ -130,16 +130,17 @@ def rotMatrix(angDeg, x, y, z):
 
 if __name__ == "__main__":
 	#Check functions against opengl API
-	from OpenGL.GLUT import *
-	from OpenGL.GLUT.freeglut import *
+	#(this uses the old fixed function matrix stack, glMatrixMode etc., so
+	#unlike the examples it needs the default compatibility context)
+	import sys
+	import OpenGL.GLUT as glut
 	import OpenGL.GL as gl
 	import numpy as np
-	import math
 
-	glutInit(sys.argv)
-	glutInitDisplayMode(GLUT_RGBA)
-	glutInitWindowSize(640, 480)
-	window = glutCreateWindow("Hello world!")
+	glut.glutInit(sys.argv)
+	glut.glutInitDisplayMode(glut.GLUT_RGBA)
+	glut.glutInitWindowSize(640, 480)
+	window = glut.glutCreateWindow("Hello world!")
 
 	gl.glMatrixMode(gl.GL_MODELVIEW)
 	gl.glLoadIdentity()

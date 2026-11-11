@@ -1,0 +1,10 @@
+# Needed by all examples
+PyOpenGL
+numpy
+Pillow
+
+# Only for the window toolkit you want to use (GLUT itself comes from the
+# system's freeglut library, e.g. "apt install freeglut3-dev")
+pygame   # pygame_example3dadvanced.py
+glfw     # glfw_example2d.py, glfw_example3d.py
+# pyglfw (pyglfw_example2d.py) is no longer maintained

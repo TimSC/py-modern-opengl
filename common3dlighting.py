@@ -1,13 +1,9 @@
 #Based on https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
-import OpenGL
-from OpenGL.GL import *
 import OpenGL.GL as gl
-from OpenGL.GL.shaders import *
-from OpenGL.GLU import *
-from OpenGL.arrays import vbo
+from OpenGL.GL.shaders import compileShader, compileProgram
 import numpy as np
-import math, sys, time
+import math, time
 import transutils
 
 strVS = """
@@ -64,20 +60,26 @@ def init():
 		exit("Requires opengl 3.3 or better, you have {0}".format(openglVersionString))
 
 	out = {}
-	# create shader
-	vs = compileShader(strVS, GL_VERTEX_SHADER)
-	fs = compileShader(strFS, GL_FRAGMENT_SHADER)
-	program = compileProgram(vs, fs)
-	glUseProgram(program)
+	# A core profile draws nothing unless a vertex array object (VAO) is bound,
+	# and compileProgram (which validates the program) fails without one, so
+	# make it first. It records the attribute setup done in draw().
+	vao = gl.glGenVertexArrays(1)
+	gl.glBindVertexArray(vao)
 
-	pMatrixUniform = glGetUniformLocation(program, 'uPMatrix')
-	mvMatrixUniform = glGetUniformLocation(program, "uMVMatrix")
-	lightPosUniform = glGetUniformLocation(program, 'lightPos')
+	# create shader
+	vs = compileShader(strVS, gl.GL_VERTEX_SHADER)
+	fs = compileShader(strFS, gl.GL_FRAGMENT_SHADER)
+	program = compileProgram(vs, fs)
+	gl.glUseProgram(program)
+
+	pMatrixUniform = gl.glGetUniformLocation(program, 'uPMatrix')
+	mvMatrixUniform = gl.glGetUniformLocation(program, "uMVMatrix")
+	lightPosUniform = gl.glGetUniformLocation(program, 'lightPos')
 
 	# attributes
-	vertIndex = glGetAttribLocation(program, "aVert")
-	colorIndex = glGetAttribLocation(program, "aColor")
-	normalIndex = glGetAttribLocation(program, "aVertNormal")
+	vertIndex = gl.glGetAttribLocation(program, "aVert")
+	colorIndex = gl.glGetAttribLocation(program, "aColor")
+	normalIndex = gl.glGetAttribLocation(program, "aVertNormal")
 
 	# define quad vertices
 	s = 0.9
@@ -126,10 +128,10 @@ def init():
 			 s, s, -s,
 			 ]
 
-	vertexBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
+	vertexBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vertexBuffer)
 	vertexData = np.array(quadV, np.float32)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, gl.GL_STATIC_DRAW)
 
 	# define normals
 	s = 1.
@@ -178,10 +180,10 @@ def init():
 			 0, s, 0,
 			 ]
 
-	normalBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer)
+	normalBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, normalBuffer)
 	normalData = np.array(quadN, np.float32)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(normalData), normalData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(normalData), normalData, gl.GL_STATIC_DRAW)
 
 	# define vertex colours
 
@@ -224,10 +226,10 @@ def init():
 			 1.0, 1.0, 0.0, 1.0,
 			 ]
 
-	colBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, colBuffer)
+	colBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, colBuffer)
 	colData = np.array(vcol, np.float32)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(colData), colData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(colData), colData, gl.GL_STATIC_DRAW)
 
 	out = {'program': program, 
 		'pMatrixUniform': pMatrixUniform, 
@@ -239,6 +241,7 @@ def init():
 	out['lightPosUniform'] = lightPosUniform
 	out['normalIndex'] = normalIndex
 	out['normalBuffer'] = normalBuffer
+	out['vao'] = vao
 	return out
 
 def draw(params, aspect):
@@ -253,8 +256,8 @@ def draw(params, aspect):
 	normalIndex = params['normalIndex']
 	normalBuffer = params['normalBuffer']
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-	glEnable(GL_DEPTH_TEST)
+	gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+	gl.glEnable(gl.GL_DEPTH_TEST)
 
 	# build projection matrix
 	fov = math.radians(45.0)
@@ -283,34 +286,35 @@ def draw(params, aspect):
 	mvMatrix = np.array(mvMatrix.reshape((16,)), np.float32)
 
 	# use shader
-	glUseProgram(program)
+	gl.glUseProgram(program)
+	gl.glBindVertexArray(params['vao'])
 
 	# set proj matrix
-	glUniformMatrix4fv(pMatrixUniform, 1, GL_FALSE, pMatrix)
+	gl.glUniformMatrix4fv(pMatrixUniform, 1, gl.GL_FALSE, pMatrix)
 
 	# set modelview matrix
-	glUniformMatrix4fv(mvMatrixUniform, 1, GL_FALSE, mvMatrix)
+	gl.glUniformMatrix4fv(mvMatrixUniform, 1, gl.GL_FALSE, mvMatrix)
 
 	# set lighting
-	glUniform3fv(lightPosUniform, 1, np.array([2., 2., 0.], np.float32))
+	gl.glUniform3fv(lightPosUniform, 1, np.array([2., 2., 0.], np.float32))
 
 	#enable arrays
-	glEnableVertexAttribArray(vertIndex)
-	glEnableVertexAttribArray(colorIndex)
-	glEnableVertexAttribArray(normalIndex)
+	gl.glEnableVertexAttribArray(vertIndex)
+	gl.glEnableVertexAttribArray(colorIndex)
+	gl.glEnableVertexAttribArray(normalIndex)
 	
 	# set buffers
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)	
-	glVertexAttribPointer(vertIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
-	glBindBuffer(GL_ARRAY_BUFFER, colBuffer)
-	glVertexAttribPointer(colorIndex, 4, GL_FLOAT, GL_FALSE, 0, None)
-	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer)
-	glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vertexBuffer)	
+	gl.glVertexAttribPointer(vertIndex, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, colBuffer)
+	gl.glVertexAttribPointer(colorIndex, 4, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, normalBuffer)
+	gl.glVertexAttribPointer(normalIndex, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
 
 	# draw
-	glDrawArrays(GL_TRIANGLES, 0, 36)
+	gl.glDrawArrays(gl.GL_TRIANGLES, 0, 36)
 
 	# disable arrays
-	glDisableVertexAttribArray(vertIndex)
-	glDisableVertexAttribArray(colorIndex)
+	gl.glDisableVertexAttribArray(vertIndex)
+	gl.glDisableVertexAttribArray(colorIndex)
 

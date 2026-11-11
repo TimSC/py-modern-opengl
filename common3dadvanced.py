@@ -1731,10 +1731,3 @@ def draw(params, width, height):
 	gl.glDisable(gl.GL_BLEND)
 
 	gl.glBindVertexArray(0)
-
-def readback(width, height):
-	# the frame just drawn, before the buffers are swapped; rows come back
-	# bottom-up, so y is flipped to count from the top
-	gl.glReadBuffer(gl.GL_BACK)
-	data = gl.glReadPixels(0, 0, width, height, gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
-	return np.frombuffer(data, dtype=np.uint8).reshape(height, width, 3)[::-1]

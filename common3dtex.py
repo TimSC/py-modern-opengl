@@ -1,18 +1,17 @@
 #Based on https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
-import OpenGL
-from OpenGL.GL import *
 import OpenGL.GL as gl
-from OpenGL.GL.shaders import *
-from OpenGL.GLU import *
-from OpenGL.arrays import vbo
-import numpy, math, sys
+from OpenGL.GL.shaders import compileShader, compileProgram
+import os
+import numpy, math
 from PIL import Image
+
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 strVS = """
 #version 330 core
-attribute vec3 aVert;
-attribute vec2 aUV;
+in vec3 aVert; // "attribute" is not allowed in a core profile
+in vec2 aUV;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 out vec2 UV;
@@ -40,18 +39,24 @@ def init():
 		exit("Requires opengl 3.3 or better, you have {0}".format(openglVersionString))
 
 	out = {}
-	# create shader
-	vs = compileShader(strVS, GL_VERTEX_SHADER)
-	fs = compileShader(strFS, GL_FRAGMENT_SHADER)
-	program = compileProgram(vs, fs)
-	glUseProgram(program)
+	# A core profile draws nothing unless a vertex array object (VAO) is bound,
+	# and compileProgram (which validates the program) fails without one, so
+	# make it first. It records the attribute setup done in draw().
+	vao = gl.glGenVertexArrays(1)
+	gl.glBindVertexArray(vao)
 
-	pMatrixUniform = glGetUniformLocation(program, 'uPMatrix')
-	mvMatrixUniform = glGetUniformLocation(program, "uMVMatrix")
-	textureUniform = glGetUniformLocation(program, "uTexture")
+	# create shader
+	vs = compileShader(strVS, gl.GL_VERTEX_SHADER)
+	fs = compileShader(strFS, gl.GL_FRAGMENT_SHADER)
+	program = compileProgram(vs, fs)
+	gl.glUseProgram(program)
+
+	pMatrixUniform = gl.glGetUniformLocation(program, 'uPMatrix')
+	mvMatrixUniform = gl.glGetUniformLocation(program, "uMVMatrix")
+	textureUniform = gl.glGetUniformLocation(program, "uTexture")
 
 	# define vertices
-	vertIndex = glGetAttribLocation(program, "aVert")
+	vertIndex = gl.glGetAttribLocation(program, "aVert")
 	s = 0.9
 	quadV = [
 			 - s, s, 0.0, 
@@ -62,13 +67,13 @@ def init():
 			 s, -s, 0.0, 
 			 ]
 
-	vertexBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
+	vertexBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vertexBuffer)
 	vertexData = numpy.array(quadV, numpy.float32)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, gl.GL_STATIC_DRAW)
 
 	# define UV
-	uvIndex = glGetAttribLocation(program, "aUV")
+	uvIndex = gl.glGetAttribLocation(program, "aUV")
 	quadUV = [
 			 0., 0.,
 			 0., 1.,
@@ -78,22 +83,22 @@ def init():
 			 1., 1.
 			 ]
 
-	uvBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer)
+	uvBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, uvBuffer)
 	uvData = numpy.array(quadUV, numpy.float32)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(uvData), uvData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(uvData), uvData, gl.GL_STATIC_DRAW)
 
 	#Create texture
-	texIndex = glGenTextures(1)
-	glBindTexture(GL_TEXTURE_2D, texIndex)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-	img = Image.open("butterfly.JPG") # .jpg, .bmp, etc. also work
+	texIndex = gl.glGenTextures(1)
+	gl.glBindTexture(gl.GL_TEXTURE_2D, texIndex)
+	gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
+	gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
+	gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+	gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+	img = Image.open(os.path.join(HERE, "butterfly.JPG")) # .jpg, .bmp, etc. also work
 	img_data = numpy.array(list(img.getdata()), numpy.uint8)
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
-	glBindTexture(GL_TEXTURE_2D, 0)
+	gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, img.size[0], img.size[1], 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, img_data)
+	gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
 	out = {'program': program, 
 		'pMatrixUniform': pMatrixUniform, 
@@ -104,6 +109,7 @@ def init():
 		'vertexBuffer': vertexBuffer,
 		'uvBuffer': uvBuffer,
 		'texIndex': texIndex}
+	out['vao'] = vao
 	return out
 
 def draw(params, aspect):
@@ -118,7 +124,7 @@ def draw(params, aspect):
 	uvBuffer = params['uvBuffer']
 	texIndex = params['texIndex']
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+	gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 	# build projection matrix
 	fov = math.radians(45.0)
 	f = 1.0 / math.tan(fov / 2.0)
@@ -136,32 +142,33 @@ def draw(params, aspect):
 							0.5, 0.0, -5.0, 1.0], numpy.float32)
 
 	# use shader
-	glUseProgram(program)
+	gl.glUseProgram(program)
+	gl.glBindVertexArray(params['vao'])
 
 	# set proj matrix
-	glUniformMatrix4fv(pMatrixUniform, 1, GL_FALSE, pMatrix)
+	gl.glUniformMatrix4fv(pMatrixUniform, 1, gl.GL_FALSE, pMatrix)
 
 	# set modelview matrix
-	glUniformMatrix4fv(mvMatrixUniform, 1, GL_FALSE, mvMatrix)
+	gl.glUniformMatrix4fv(mvMatrixUniform, 1, gl.GL_FALSE, mvMatrix)
 
 	#enable arrays
-	glEnableVertexAttribArray(vertIndex)
-	glEnableVertexAttribArray(uvIndex)
+	gl.glEnableVertexAttribArray(vertIndex)
+	gl.glEnableVertexAttribArray(uvIndex)
 
 	#enable texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texIndex)
+	gl.glActiveTexture(gl.GL_TEXTURE0);
+	gl.glBindTexture(gl.GL_TEXTURE_2D, texIndex)
 
 	# set buffers
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
-	glVertexAttribPointer(vertIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
-	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer)
-	glVertexAttribPointer(uvIndex, 2, GL_FLOAT, GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vertexBuffer)
+	gl.glVertexAttribPointer(vertIndex, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, uvBuffer)
+	gl.glVertexAttribPointer(uvIndex, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
 
 	# draw
-	glDrawArrays(GL_TRIANGLES, 0, 6)
+	gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6)
 
 	# disable arrays
-	glDisableVertexAttribArray(vertIndex)
-	glDisableVertexAttribArray(uvIndex)
+	gl.glDisableVertexAttribArray(vertIndex)
+	gl.glDisableVertexAttribArray(uvIndex)
 

@@ -1,16 +1,15 @@
 #Based on https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 #and tips from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping
 
-import OpenGL
-from OpenGL.GL import *
 import OpenGL.GL as gl
-from OpenGL.GL.shaders import *
-from OpenGL.GLU import *
-from OpenGL.arrays import vbo
+from OpenGL.GL.shaders import compileShader, compileProgram
+import os
 import numpy as np
-import math, sys, time
+import math, time
 import transutils
 from PIL import Image
+
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 strVS = """
 #version 330 core
@@ -81,22 +80,22 @@ void main() {
 
 def loadtexture(filename):
 	#Create texture
-	texIndex = glGenTextures(1)
-	glBindTexture(GL_TEXTURE_2D, texIndex)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-	img = Image.open(filename) # .jpg, .bmp, etc. also work
+	texIndex = gl.glGenTextures(1)
+	gl.glBindTexture(gl.GL_TEXTURE_2D, texIndex)
+	gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
+	gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
+	gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+	gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+	img = Image.open(os.path.join(HERE, filename)) # .jpg, .bmp, etc. also work
 	texData = np.array(list(img.getdata()), np.uint8)
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, texData)
+	gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, img.size[0], img.size[1], 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, texData)
 	return texIndex, {'data':texData, 'width': img.size[0], 'height': img.size[1]}
 
 def normalize(vec):
 	mag=np.linalg.norm(vec)
 	if mag>0.: 
 		return vec/mag
-	return v
+	return vec
 
 def calcTangentsTri(verts, normals, uvs):
 	deltaPos1 = verts[1]-verts[0];
@@ -125,22 +124,28 @@ def init():
 		exit("Requires opengl 3.3 or better, you have {0}".format(openglVersionString))
 
 	out = {}
-	# create shader
-	vs = compileShader(strVS, GL_VERTEX_SHADER)
-	fs = compileShader(strFS, GL_FRAGMENT_SHADER)
-	program = compileProgram(vs, fs)
-	glUseProgram(program)
+	# A core profile draws nothing unless a vertex array object (VAO) is bound,
+	# and compileProgram (which validates the program) fails without one, so
+	# make it first. It records the attribute setup done in draw().
+	vao = gl.glGenVertexArrays(1)
+	gl.glBindVertexArray(vao)
 
-	pMatrixUniform = glGetUniformLocation(program, 'uPMatrix')
-	mvMatrixUniform = glGetUniformLocation(program, "uMVMatrix")
-	lightPosUniform = glGetUniformLocation(program, 'lightPos')
+	# create shader
+	vs = compileShader(strVS, gl.GL_VERTEX_SHADER)
+	fs = compileShader(strFS, gl.GL_FRAGMENT_SHADER)
+	program = compileProgram(vs, fs)
+	gl.glUseProgram(program)
+
+	pMatrixUniform = gl.glGetUniformLocation(program, 'uPMatrix')
+	mvMatrixUniform = gl.glGetUniformLocation(program, "uMVMatrix")
+	lightPosUniform = gl.glGetUniformLocation(program, 'lightPos')
 
 	# attributes
-	vertIndex = glGetAttribLocation(program, "aVert")
-	normalIndex = glGetAttribLocation(program, "aVertNormal")
-	tangentIndex = glGetAttribLocation(program, "aTangent")
-	bitangentIndex = glGetAttribLocation(program, "aBitangent")
-	uvIndex = glGetAttribLocation(program, "aUV")
+	vertIndex = gl.glGetAttribLocation(program, "aVert")
+	normalIndex = gl.glGetAttribLocation(program, "aVertNormal")
+	tangentIndex = gl.glGetAttribLocation(program, "aTangent")
+	bitangentIndex = gl.glGetAttribLocation(program, "aBitangent")
+	uvIndex = gl.glGetAttribLocation(program, "aUV")
 
 	# define quad vertices
 	s = 0.9
@@ -189,10 +194,10 @@ def init():
 			 [s, s, -s,],
 			 ])
 
-	vertexBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
+	vertexBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vertexBuffer)
 	vertexData = np.array(quadV, np.float32).reshape(quadV.size)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(vertexData), vertexData, gl.GL_STATIC_DRAW)
 
 	# define normals
 	s = 1.
@@ -241,10 +246,10 @@ def init():
 			 [0, s, 0,]
 			 ])
 
-	normalBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer)
+	normalBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, normalBuffer)
 	normalData = np.array(quadN, np.float32).reshape(quadN.size)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(normalData), normalData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(normalData), normalData, gl.GL_STATIC_DRAW)
 
 	#UV texture data
 
@@ -257,20 +262,20 @@ def init():
 			 [0., 0.,],[0., 1.,],[1., 0.,],[1., 0.,],[0., 1.,],[1., 1.],
 			 ])
 
-	uvBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer)
+	uvBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, uvBuffer)
 	uvData = np.array(quadUV, np.float32).reshape(quadUV.size)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(uvData), uvData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(uvData), uvData, gl.GL_STATIC_DRAW)
 
 	#Load textures and maps
 	normalTexIndex, normalTexData = loadtexture("brick-normalmap.jpg")
 	texIndex, texData = loadtexture("brick-texture.jpg")
 
-	texLoc = glGetUniformLocation(program, "uNormalTexture");
-	glUniform1i(texLoc, 0);
+	texLoc = gl.glGetUniformLocation(program, "uNormalTexture");
+	gl.glUniform1i(texLoc, 0);
 
-	texLoc = glGetUniformLocation(program, "uTexture");
-	glUniform1i(texLoc, 1);
+	texLoc = gl.glGetUniformLocation(program, "uTexture");
+	gl.glUniform1i(texLoc, 1);
 
 	#Compute tangents
 	tangents, bitangents = [], []
@@ -284,15 +289,15 @@ def init():
 	tangents = np.array(tangents)
 	bitangents = np.array(bitangents)
 
-	tangentsBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, tangentsBuffer)
+	tangentsBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, tangentsBuffer)
 	tangentData = np.array(tangents, np.float32).reshape(tangents.size)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(tangentData), tangentData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(tangentData), tangentData, gl.GL_STATIC_DRAW)
 
-	bitangentsBuffer = glGenBuffers(1)
-	glBindBuffer(GL_ARRAY_BUFFER, bitangentsBuffer)
+	bitangentsBuffer = gl.glGenBuffers(1)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, bitangentsBuffer)
 	bitangentsData = np.array(bitangents, np.float32).reshape(bitangents.size)
-	glBufferData(GL_ARRAY_BUFFER, 4 * len(bitangentsData), bitangentsData, GL_STATIC_DRAW)
+	gl.glBufferData(gl.GL_ARRAY_BUFFER, 4 * len(bitangentsData), bitangentsData, gl.GL_STATIC_DRAW)
 
 	out = {'program': program, 
 		'pMatrixUniform': pMatrixUniform, 
@@ -315,6 +320,7 @@ def init():
 	out['normalTexData'] = normalTexData
 	out['texData'] = texData
 	
+	out['vao'] = vao
 	return out
 
 def draw(params, aspect):
@@ -337,8 +343,8 @@ def draw(params, aspect):
 	normalTexData = params['normalTexData']
 	texData = params['texData']
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-	glEnable(GL_DEPTH_TEST)
+	gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+	gl.glEnable(gl.GL_DEPTH_TEST)
 
 	# build projection matrix
 	fov = math.radians(45.0)
@@ -367,53 +373,54 @@ def draw(params, aspect):
 	mvMatrix = np.array(mvMatrix.reshape((16,)), np.float32)
 
 	# use shader
-	glUseProgram(program)
+	gl.glUseProgram(program)
+	gl.glBindVertexArray(params['vao'])
 
 	# set proj matrix
-	glUniformMatrix4fv(pMatrixUniform, 1, GL_FALSE, pMatrix)
+	gl.glUniformMatrix4fv(pMatrixUniform, 1, gl.GL_FALSE, pMatrix)
 
 	# set modelview matrix
-	glUniformMatrix4fv(mvMatrixUniform, 1, GL_FALSE, mvMatrix)
+	gl.glUniformMatrix4fv(mvMatrixUniform, 1, gl.GL_FALSE, mvMatrix)
 
 	# set lighting
-	glUniform3fv(lightPosUniform, 1, np.array([2., 2., 0.], np.float32))
+	gl.glUniform3fv(lightPosUniform, 1, np.array([2., 2., 0.], np.float32))
 
 	#enable normal map
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, normalTexIndex)
+	gl.glActiveTexture(gl.GL_TEXTURE0);
+	gl.glBindTexture(gl.GL_TEXTURE_2D, normalTexIndex)
 
 	#enable texture
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texIndex)
+	gl.glActiveTexture(gl.GL_TEXTURE1);
+	gl.glBindTexture(gl.GL_TEXTURE_2D, texIndex)
 
 	#enable arrays
-	glEnableVertexAttribArray(vertIndex)
-	glEnableVertexAttribArray(normalIndex)
-	glEnableVertexAttribArray(tangentIndex)
-	glEnableVertexAttribArray(bitangentIndex)
-	glEnableVertexAttribArray(uvIndex)
+	gl.glEnableVertexAttribArray(vertIndex)
+	gl.glEnableVertexAttribArray(normalIndex)
+	gl.glEnableVertexAttribArray(tangentIndex)
+	gl.glEnableVertexAttribArray(bitangentIndex)
+	gl.glEnableVertexAttribArray(uvIndex)
 	
 	# set buffers
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)	
-	glVertexAttribPointer(vertIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
-	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer)
-	glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vertexBuffer)	
+	gl.glVertexAttribPointer(vertIndex, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, normalBuffer)
+	gl.glVertexAttribPointer(normalIndex, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
 
-	glBindBuffer(GL_ARRAY_BUFFER, tangentsBuffer)
-	glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
-	glBindBuffer(GL_ARRAY_BUFFER, bitangentsBuffer)
-	glVertexAttribPointer(bitangentIndex, 3, GL_FLOAT, GL_FALSE, 0, None)
-	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer)
-	glVertexAttribPointer(uvIndex, 2, GL_FLOAT, GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, tangentsBuffer)
+	gl.glVertexAttribPointer(tangentIndex, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, bitangentsBuffer)
+	gl.glVertexAttribPointer(bitangentIndex, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, uvBuffer)
+	gl.glVertexAttribPointer(uvIndex, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
 
 	# draw
-	glDrawArrays(GL_TRIANGLES, 0, 36)
+	gl.glDrawArrays(gl.GL_TRIANGLES, 0, 36)
 
 	# disable arrays
-	glDisableVertexAttribArray(vertIndex)
-	glDisableVertexAttribArray(normalIndex)
+	gl.glDisableVertexAttribArray(vertIndex)
+	gl.glDisableVertexAttribArray(normalIndex)
 
-	glDisableVertexAttribArray(tangentIndex)
-	glDisableVertexAttribArray(bitangentIndex)
-	glDisableVertexAttribArray(uvIndex)
+	gl.glDisableVertexAttribArray(tangentIndex)
+	gl.glDisableVertexAttribArray(bitangentIndex)
+	gl.glDisableVertexAttribArray(uvIndex)
 

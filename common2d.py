@@ -6,6 +6,8 @@ import numpy as np
 import OpenGL.GL as gl
 import OpenGL.arrays.vbo as glvbo
 
+vao = None # the vertex array object, made in init_shader_program
+
 # Vertex shader
 VS = """
 #version 330
@@ -46,6 +48,8 @@ def display(program):
 
 	# clear the buffer
 	gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+	# the attribute setup below is recorded in the VAO
+	gl.glBindVertexArray(vao)
 	# bind the VBO 
 	vbo.bind()
 	# tell OpenGL that the VBO contains an array of vertices
@@ -100,6 +104,10 @@ def init_shader_program():
 
 	# background color
 	gl.glClearColor(0, 0, 0, 0)
+
+	# A core profile draws nothing unless a vertex array object (VAO) is bound
+	global vao
+	vao = gl.glGenVertexArrays(1)
 	# create a Vertex Buffer Object with the specified data
 
 	vertex_shader = compile_vertex_shader(VS)

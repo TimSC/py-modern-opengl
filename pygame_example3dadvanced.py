@@ -2,9 +2,9 @@
 #pygame window, the way the python Quake II port opens its window.
 #
 #usage: pygame_example3dadvanced.py [--seconds S] [--frames N] [--shot FILE.png]
-#  It runs until a key press or the window is closed, or for S seconds or N
-#  frames if given. --shot saves the last frame (read back before the flip)
-#  as an image.
+#  It runs until a key press or the window is closed, or for S seconds if
+#  given. --frames N [--shot FILE.png] is the self-check mode of all the
+#  runners (see selfcheck.py): check frame N, save it, exit with 0 or 1.
 #
 #Context notes:
 #  * pygame.display.gl_set_attribute must come *before* set_mode, or it has no
@@ -19,16 +19,14 @@
 import sys
 import time
 
-import numpy as np
 import pygame
 import OpenGL.GL as gl
-from PIL import Image
 import common3dadvanced
+import selfcheck
 
 def main():
-	frames = int(sys.argv[sys.argv.index("--frames") + 1]) if "--frames" in sys.argv else None
+	check = selfcheck.SelfCheck()
 	seconds = float(sys.argv[sys.argv.index("--seconds") + 1]) if "--seconds" in sys.argv else None
-	shot = sys.argv[sys.argv.index("--shot") + 1] if "--shot" in sys.argv else None
 
 	pygame.init()
 	width, height = 640, 480
@@ -42,7 +40,6 @@ def main():
 
 	params = common3dadvanced.init()
 
-	n = 0
 	t0 = time.time()
 	clock = pygame.time.Clock()
 	while True:
@@ -50,16 +47,12 @@ def main():
 			if event.type in (pygame.QUIT, pygame.KEYDOWN):
 				pygame.quit(); return
 		common3dadvanced.draw(params, width, height)
-		n += 1
-		last = (frames is not None and n >= frames) or (seconds is not None and time.time() - t0 >= seconds)
-		if last:
-			err = gl.glGetError()
-			print("frame {}: glGetError {}".format(n, err))
-			if shot:
-				Image.fromarray(np.ascontiguousarray(common3dadvanced.readback(width, height))).save(shot)
-				print("saved", shot)
+		# --frames N [--shot FILE]: check the Nth frame and exit (see selfcheck.py)
+		if check.frame():
+			pygame.quit()
+			sys.exit(check.status)
 		pygame.display.flip()
-		if last:
+		if seconds is not None and time.time() - t0 >= seconds:
 			pygame.quit(); return
 		clock.tick(60)
 
