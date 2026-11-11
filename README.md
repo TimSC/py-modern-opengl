@@ -32,6 +32,24 @@ Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ 
 
 * glut_example3dtexnorms.py - Normal mapped, textured, rotating cube in glut
 
+<h3>Quake II style shaders</h3>
+
+* glut_example3dadvanced.py - Quake II gl3 renderer shaders (Yamagi Quake II) on cubes floating in space, in glut
+* pygame_example3dadvanced.py - The same in pygame (`--seconds S`, `--frames N`, `--shot file.png`)
+
+common3dadvanced.py uses the GLSL shaders and setup code of the Yamagi Quake II gl3 renderer. Each cube shows one shader:
+
+* lightmaps with light styles and dynamic lights
+* flowing (scrolling) textures
+* warping translucent water
+* translucent and alpha-tested textures
+* md2-style models with per-vertex light and frame interpolation
+* a powerup shell and a beam
+* a sky box
+* round point-sprite particles
+
+It needs an OpenGL 3.2 core profile, and the comments at the top of the file list the quirks found along the way. That file is GPL v2 or later, because it contains code from Yamagi Quake II (Copyright id Software and Daniel Gibson). brick-texture.jpg and butterfly.JPG are reused; every other image is generated.
+
 <h2>Copying</h2>
 
 Copyright (c) 2012-2015, Tim Sheerman-Chase, Cyrille Rossant, Patrick Skjennum
@@ -93,4 +111,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 <h3>Textures</h3>
 
 Brick texture and normal map from http://opengameart.org/content/50-free-textures-4-normalmaps
+
+Butterfly photo (butterfly.JPG) by Tim Sheerman-Chase.
 
