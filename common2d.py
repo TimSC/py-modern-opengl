@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 #Based on http://cyrille.rossant.net/shaders-opengl/
 
-from __future__ import print_function
 import numpy as np
 import OpenGL.GL as gl
 import OpenGL.arrays.vbo as glvbo

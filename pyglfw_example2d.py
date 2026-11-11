@@ -1,5 +1,4 @@
 # coding=utf-8
-from __future__ import print_function
 import pyglfw.pyglfw as glfw
 import common2d
 

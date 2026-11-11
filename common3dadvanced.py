@@ -172,7 +172,6 @@
 #Based on the examples in this directory and
 #https://github.com/yquake2/yquake2/blob/master/src/client/refresh/gl3/gl3_shaders.c
 
-from __future__ import print_function
 import ctypes
 import math
 import os

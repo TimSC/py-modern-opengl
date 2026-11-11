@@ -1,5 +1,5 @@
 # py-modern-opengl
-Examples of modern opengl 3.3+ shaders in python 2.7, based on glut, glfw and pyglfw frameworks.
+Examples of modern opengl 3.3+ shaders in python 3, based on glut, glfw, pyglfw and pygame frameworks.
 
 Based on examples by Cyrille Rossant http://cyrille.rossant.net/shaders-opengl/ and Patrick Skjennum https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 

@@ -1,6 +1,5 @@
 #Based on https://github.com/Habitats/uni/blob/master/img_processing/project/graphics_modern2.py
 
-from __future__ import print_function
 import OpenGL
 from OpenGL.GL import *
 import OpenGL.GL as gl
